@@ -33,12 +33,15 @@ void setup() {
   time = millis();
   Wire.begin(8);                /* join i2c bus with address 8 */
   Wire.onReceive(receiveEvent); /* register receive event */
+  Wire.onRequest(requestEvent);
   //pinMode(3, OUTPUT);
   //pinMode(PE0,OUTPUT);
   for(int i =22;i<=37;i++){
     pinMode(i,OUTPUT);
     digitalWrite(i,HIGH);
   }
+
+  pinMode(1,INPUT_PULLUP);
 }
 
 // the loop function runs over and over again forever
@@ -49,6 +52,8 @@ void loop() {
       digitalWrite(i,HIGH);
     }
   }
+
+
  delay(100);
 }
 
@@ -80,4 +85,23 @@ void receiveEvent(int howMany) {
   }
     Serial.println(data);           
     processCall(data);         
+}
+
+void requestEvent(){
+  if(digitalRead(1)==LOW){
+    String tmp;
+    tmp+="{\"gpio\":";
+    tmp+=1;
+    tmp+=",\"state\":1}";
+    Wire.write(tmp.c_str());   
+  }
+  else if(digitalRead(1)==HIGH){
+    String tmp;
+    tmp+="{\"gpio\":";
+    tmp+=1;
+    tmp+=",\"state\":0}";
+    Wire.write(tmp.c_str()); 
+  }
+
+
 }
