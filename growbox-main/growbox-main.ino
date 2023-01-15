@@ -745,7 +745,7 @@ void setup() {
 
   // Initialize  Drain Float Switch-------------------------------
   pinMode(D5, INPUT_PULLUP);
-  pinMode(D6, INPUT_PULLUP);
+  //pinMode(D6, INPUT_PULLUP);
 
   Wire.onReceive(receiveEvent);
 
