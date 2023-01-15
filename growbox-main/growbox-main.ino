@@ -651,6 +651,49 @@ const char* PARAM_INT = "inputInt";
 const char* PARAM_FLOAT = "inputFloat";
 
 
+//Sensors
+bool runoff = false;
+bool drain = false;
+
+
+
+
+void processCall(String command){
+      DynamicJsonBuffer jsonBuffer;
+      JsonObject& root= jsonBuffer.parseObject(command);
+      
+       if (root.success()) {
+          int gpio = atoi(root["gpio"]);
+          Serial.println(gpio);
+          int state = atoi(root["state"]);
+          Serial.println(state);
+
+          if (gpio == 1 && state == 1){
+            runoff = true;
+          }
+          else if(gpio == 1 && state == 0){
+            runoff = false;
+          }
+          //set GPIO state  
+          ////////////////////////////////////////////////////////////////////digitalWrite(gpio, state);
+          //digitalWrite(PE0, state);
+       }
+}
+
+
+// function that executes when data is received from master
+void receiveEvent(int howMany) {
+  String data="";
+ while (0 <Wire.available()) {
+    char c = Wire.read();     
+    data += c;
+    
+  }
+    Serial.println(data);           
+    processCall(data);         
+}
+
+
 void setup() {
 
 
@@ -704,7 +747,7 @@ void setup() {
   pinMode(D5, INPUT_PULLUP);
   pinMode(D6, INPUT_PULLUP);
 
-
+  Wire.onReceive(receiveEvent);
 
 
 
@@ -734,6 +777,10 @@ void loop() {
   if(digitalRead(D5)==LOW){
     lastDrainTime = millis();
   }
+
+  Wire.requestFrom(8, 25);
+  receiveEvent(25);
+
 
   for (int i = 0; i < 16; i++) {
 
@@ -781,7 +828,7 @@ void loop() {
       }
     }
     else if(names[i] == "Runoff Pumps"){
-      if(digitalRead(D6) == LOW){//If water level sensors activate
+      if(runoff){//If water level sensors activate
         relay[i]=LOW; //set relay ON
       }
       else{
@@ -793,3 +840,5 @@ void loop() {
 
   writeRelays();
 }
+
+
