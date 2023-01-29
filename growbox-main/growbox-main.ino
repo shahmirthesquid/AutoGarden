@@ -170,7 +170,7 @@ const char index_html[] PROGMEM = R"rawliteral(
       </form><br>
 
       <form action="/get" target="hidden-form">
-        How many minutes to stay ON? (current value %LEN1%): <input type="number" min="0" step="0.1" name="len1"> <input type="submit" value="Submit" onclick="submitMessage()">
+        How many minutes to stay ON? (current value %LEN1%): <input type="number" min="0" step="0.001" name="len1"> <input type="submit" value="Submit" onclick="submitMessage()">
       </form>
 
     </div>
@@ -199,7 +199,7 @@ const char index_html[] PROGMEM = R"rawliteral(
       </form><br>
 
       <form action="/get" target="hidden-form">
-        How many minutes to stay ON? (current value %LEN2%): <input type="number" min="0" step="0.1" name="len2"> <input type="submit" value="Submit" onclick="submitMessage()">
+        How many minutes to stay ON? (current value %LEN2%): <input type="number" min="0" step="0.001" name="len2"> <input type="submit" value="Submit" onclick="submitMessage()">
       </form>
 
     </div>
@@ -226,7 +226,7 @@ const char index_html[] PROGMEM = R"rawliteral(
       </form><br>
 
       <form action="/get" target="hidden-form">
-        How many minutes to stay ON? (current value %LEN3%): <input type="number" min="0" step="0.1" name="len3"> <input type="submit" value="Submit" onclick="submitMessage()">
+        How many minutes to stay ON? (current value %LEN3%): <input type="number" min="0" step="0.001" name="len3"> <input type="submit" value="Submit" onclick="submitMessage()">
       </form>
 
     </div>
@@ -282,7 +282,7 @@ const char index_html[] PROGMEM = R"rawliteral(
       </form><br>
 
       <form action="/get" target="hidden-form">
-        How many minutes to stay ON? (current value %LEN5%): <input type="number" min="0" step="0.1" name="len5"> <input type="submit" value="Submit" onclick="submitMessage()">
+        How many minutes to stay ON? (current value %LEN5%): <input type="number" min="0" step="0.001" name="len5"> <input type="submit" value="Submit" onclick="submitMessage()">
       </form>
 
     </div>
@@ -309,7 +309,7 @@ const char index_html[] PROGMEM = R"rawliteral(
       </form><br>
 
       <form action="/get" target="hidden-form">
-        How many minutes to stay ON? (current value %LEN6%): <input type="number" min="0" step="0.1" name="len6"> <input type="submit" value="Submit" onclick="submitMessage()">
+        How many minutes to stay ON? (current value %LEN6%): <input type="number" min="0" step="0.001" name="len6"> <input type="submit" value="Submit" onclick="submitMessage()">
       </form>
 
     </div>
@@ -335,7 +335,7 @@ const char index_html[] PROGMEM = R"rawliteral(
       </form><br>
 
       <form action="/get" target="hidden-form">
-        How many minutes to stay ON? (current value %LEN7%): <input type="number" min="0" step="0.1" name="len7"> <input type="submit" value="Submit" onclick="submitMessage()">
+        How many minutes to stay ON? (current value %LEN7%): <input type="number" min="0" step="0.001" name="len7"> <input type="submit" value="Submit" onclick="submitMessage()">
       </form>
 
     </div>
@@ -362,7 +362,7 @@ const char index_html[] PROGMEM = R"rawliteral(
       </form><br>
 
       <form action="/get" target="hidden-form">
-        How many minutes to stay ON? (current value %LEN8%): <input type="number" min="0" step="0.1" name="len8"> <input type="submit" value="Submit" onclick="submitMessage()">
+        How many minutes to stay ON? (current value %LEN8%): <input type="number" min="0" step="0.001" name="len8"> <input type="submit" value="Submit" onclick="submitMessage()">
       </form>
 
     </div>
@@ -389,7 +389,7 @@ const char index_html[] PROGMEM = R"rawliteral(
       </form><br>
 
       <form action="/get" target="hidden-form">
-        How many minutes to stay ON? (current value %LEN9%): <input type="number" min="0" step="0.1" name="len9"> <input type="submit" value="Submit" onclick="submitMessage()">
+        How many minutes to stay ON? (current value %LEN9%): <input type="number" min="0" step="0.001" name="len9"> <input type="submit" value="Submit" onclick="submitMessage()">
       </form>
 
     </div>
@@ -418,7 +418,7 @@ const char index_html[] PROGMEM = R"rawliteral(
       </form><br>
 
       <form action="/get" target="hidden-form">
-        How many minutes to stay ON? (current value %LEN10%): <input type="number" min="0" step="0.1" name="len10"> <input type="submit" value="Submit" onclick="submitMessage()">
+        How many minutes to stay ON? (current value %LEN10%): <input type="number" min="0" step="0.001" name="len10"> <input type="submit" value="Submit" onclick="submitMessage()">
       </form>
 
     </div>
@@ -444,7 +444,7 @@ const char index_html[] PROGMEM = R"rawliteral(
       </form><br>
 
       <form action="/get" target="hidden-form">
-        How many minutes to stay ON? (current value %LEN11%): <input type="number" min="0" step="0.1" name="len11"> <input type="submit" value="Submit" onclick="submitMessage()">
+        How many minutes to stay ON? (current value %LEN11%): <input type="number" min="0" step="0.001" name="len11"> <input type="submit" value="Submit" onclick="submitMessage()">
       </form>
 
     </div>
@@ -469,7 +469,7 @@ const char index_html[] PROGMEM = R"rawliteral(
       </form><br>
 
       <form action="/get" target="hidden-form">
-        How many minutes to stay ON? (current value %LEN12%): <input type="number" min="0" step="0.1" name="len12"> <input type="submit" value="Submit" onclick="submitMessage()">
+        How many minutes to stay ON? (current value %LEN12%): <input type="number" min="0" step="0.001" name="len12"> <input type="submit" value="Submit" onclick="submitMessage()">
       </form>
 
     </div>
@@ -495,7 +495,7 @@ const char index_html[] PROGMEM = R"rawliteral(
       </form><br>
 
       <form action="/get" target="hidden-form">
-        How many minutes to stay ON? (current value %LEN13%): <input type="number" min="0" step="0.1" name="len13"> <input type="submit" value="Submit" onclick="submitMessage()">
+        How many minutes to stay ON? (current value %LEN13%): <input type="number" min="0" step="0.001" name="len13"> <input type="submit" value="Submit" onclick="submitMessage()">
       </form>
 
     </div>
@@ -523,7 +523,7 @@ const char index_html[] PROGMEM = R"rawliteral(
       </form><br>
 
       <form action="/get" target="hidden-form">
-        How many minutes to stay ON? (current value %LEN14%): <input type="number" min="0" step="0.1" name="len14"> <input type="submit" value="Submit" onclick="submitMessage()">
+        How many minutes to stay ON? (current value %LEN14%): <input type="number" min="0" step="0.001" name="len14"> <input type="submit" value="Submit" onclick="submitMessage()">
       </form>
 
     </div>
@@ -550,7 +550,7 @@ const char index_html[] PROGMEM = R"rawliteral(
       </form><br>
 
       <form action="/get" target="hidden-form">
-        How many minutes to stay ON? (current value %LEN15%): <input type="number" min="0" step="0.1" name="len15"> <input type="submit" value="Submit" onclick="submitMessage()">
+        How many minutes to stay ON? (current value %LEN15%): <input type="number" min="0" step="0.001" name="len15"> <input type="submit" value="Submit" onclick="submitMessage()">
       </form>
 
     </div>
@@ -574,7 +574,7 @@ const char index_html[] PROGMEM = R"rawliteral(
       </form><br>
 
       <form action="/get" target="hidden-form">
-        How many minutes to stay ON? (current value %LEN16%): <input type="number" min="0" step="0.1" name="len16"> <input type="submit" value="Submit" onclick="submitMessage()">
+        How many minutes to stay ON? (current value %LEN16%): <input type="number" min="0" step="0.001" name="len16"> <input type="submit" value="Submit" onclick="submitMessage()">
       </form>
 
     </div>
