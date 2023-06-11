@@ -39,4 +39,10 @@
  Any of the wall outlets and relays in the system can be used for this functionality. The user simply has to assign a name to one of the wall outlets on the web interface. Assigning the name "Drain Pump" (without quotations"") will give that wall outlet the "Drain Pump" functionality. Similarly, assigning the name "Runoff Pumps" (without quotations"") will give the "Runoff Pumps" functionality to that wall outlet.
  
  ![image](https://github.com/shahmirthesquid/GrowBox/assets/89569533/7ca1c471-964f-4b89-862a-e051ac5f4bfa)
+ 
+ ![image](https://github.com/shahmirthesquid/GrowBox/assets/89569533/3bee6638-fb24-4a03-9377-4725c32bae62)
+ 
+ ![image](https://github.com/shahmirthesquid/GrowBox/assets/89569533/8356e4de-630d-4699-be1d-80124291b400)
+
+
 
