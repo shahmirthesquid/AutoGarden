@@ -3,13 +3,25 @@
  
  This is an arduino software designed to automate the control of and indoor growing environment. It provides a control webpage accessible over LAN/WLAN, timer functionality, and water drainage functionality.
  
+ 
+ 
+ 
  Hardware Requirements:
  
  This is just what I used, the code could easily be adapted to work with different setups
+ 
+ 
  -NodeMCU 1.0 ESP-12E (Or ESP8266)
  -Arduino Mega (Or any arduino that have enough output pins for your application)
  -16 Channel Relay module (Or any relay module, max is 16channels)
  -16x Wall outlets (Or however many you want, max is 16)
+ 
+ 
+ 
+ 
+ 
+ 
+ 
  
  
  Auto Drainage Functionality:
