@@ -6,20 +6,18 @@
  
  
  
- Hardware Requirements:
+ # Hardware Requirements:
  
  This is just what I used, the code could easily be adapted to work with different setups
  
  
- -NodeMCU 1.0 ESP-12E (Or ESP8266)
+ - NodeMCU 1.0 ESP-12E (Or ESP8266)
  
- -Arduino Mega (Or any arduino that have enough output pins for your application)
+ - Arduino Mega (Or any arduino that have enough output pins for your application)
  
- -16 Channel Relay module (Or any relay module, max is 16channels)
+ - 16 Channel Relay module (Or any relay module, max is 16channels)
  
- -16x Wall outlets (Or however many you want, max is 16)
- 
- 
+ - 16x Wall outlets (Or however many you want, max is 16)
  
  
  
@@ -27,7 +25,9 @@
  
  
  
- Auto Drainage Functionality:
+ 
+ 
+ # Auto Drainage Functionality:
  
  "Drain Pump" = D5 pin on ESP8266, Stays on for 30s after being triggered (Will be moved to a pin on the MEGA in the future)
  
