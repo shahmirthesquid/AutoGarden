@@ -30,9 +30,11 @@
  Auto Drainage Functionality:
  
  "Drain Pump" = D5 pin on ESP8266, Stays on for 30s after being triggered (Will be moved to a pin on the MEGA in the future)
+ 
  "Runoff Pumps" = Pin 1 on MEGA board, Stays on only while the trigger is held
  
  The automatic drainage functionality is implemented by supporting up to 2 water sensors and associated pumps. These pumps will automatically turn on when their associated sensor is triggered. The trigger activates when the associated pin is brought LOW to ground.
+ 
  
  Any of the wall outlets and relays in the system can be used for this functionality. The user simply has to assign a name to one of the wall outlets on the web interface. Assigning the name "Drain Pump" (without quotations"") will give that wall outlet the "Drain Pump" functionality. Similarly, assigning the name "Runoff Pumps" (without quotations"") will give the "Runoff Pumps" functionality to that wall outlet.
  
