@@ -12,8 +12,11 @@
  
  
  -NodeMCU 1.0 ESP-12E (Or ESP8266)
+ 
  -Arduino Mega (Or any arduino that have enough output pins for your application)
+ 
  -16 Channel Relay module (Or any relay module, max is 16channels)
+ 
  -16x Wall outlets (Or however many you want, max is 16)
  
  
