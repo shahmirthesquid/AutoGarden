@@ -29,7 +29,8 @@
  
  # Auto Drainage Functionality:
  
- "Drain Pump" = Pin 2 on MEGA board, Stays on for 30s after being triggered (Will be moved to a pin on the MEGA in the future)
+ "Drain Pump" = ~~D5 pin on ESP8266 board, Stays on for 30s after being triggered (Will be moved to a pin on the MEGA in the future)~~
+                 Pin 2 on MEGA board
  
  "Runoff Pumps" = Pin 1 on MEGA board, Stays on only while the trigger is held
  
