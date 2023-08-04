@@ -60,27 +60,27 @@ void serverSetup(){
       if (request->hasParam(name)) {
         inputMessage = request->getParam(name)->value();
         Serial.println(inputMessage);
-        writeFile(SPIFFS, ("/"+name+".txt").c_str(), inputMessage.c_str());
+        writeFile(LittleFS, ("/"+name+".txt").c_str(), inputMessage.c_str());
         names[i]=inputMessage;
       }
       // GET inputInt value on <ESP_IP>/get?inputInt=<inputMessage>
       else if (request->hasParam(startTime)) {
         //Serial.println("GOT HERE!!!!!!!!");
         inputMessage = request->getParam(startTime)->value();
-        writeFile(SPIFFS, ("/"+startTime+".txt").c_str(), inputMessage.c_str());
+        writeFile(LittleFS, ("/"+startTime+".txt").c_str(), inputMessage.c_str());
         startTimes[i]=inputMessage;
 
         relay[i]=HIGH; // turn off relay
-        writeFile(SPIFFS, ("/"+relayFile+".txt").c_str(), "1"); 
+        writeFile(LittleFS, ("/"+relayFile+".txt").c_str(), "1"); 
       }
       // GET inputFloat value on <ESP_IP>/get?inputFloat=<inputMessage>
       else if (request->hasParam(timeLen)) {
         inputMessage = request->getParam(timeLen)->value();
-        writeFile(SPIFFS, ("/"+timeLen+".txt").c_str(), inputMessage.c_str());
+        writeFile(LittleFS, ("/"+timeLen+".txt").c_str(), inputMessage.c_str());
         timeLengths[i]=inputMessage.toFloat();
 
         relay[i]=HIGH; // turn off relay
-        writeFile(SPIFFS, ("/"+relayFile+".txt").c_str(), "1"); 
+        writeFile(LittleFS, ("/"+relayFile+".txt").c_str(), "1"); 
       }
       else {
         inputMessage = "No message sent";
@@ -181,6 +181,11 @@ void serverSetup(){
     request->send(200, "text/plain", formattedTime);
 
   });
+
+  server.on("/BlueIrisSession", HTTP_GET, [] (AsyncWebServerRequest *request) {//get blue iris session
+    char tmpsession[80];
+    request->send(200, "text/plain", tmpsession);
+  });
   
   server.onNotFound(notFound);
 
@@ -224,10 +229,10 @@ String processor(const String& var){
   }
 
   if(var == "inputString"){
-    return readFile(SPIFFS, "/inputString.txt");
+    return readFile(LittleFS, "/inputString.txt");
   }
   else if(var == "inputInt"){
-    if( readFile(SPIFFS, "/inputInt.txt")=="1"){
+    if( readFile(LittleFS, "/inputInt.txt")=="1"){
       return "\"1\" Checked";
     }
     else{
@@ -235,7 +240,13 @@ String processor(const String& var){
     }
   }
   else if(var == "inputFloat"){
-    return readFile(SPIFFS, "/inputFloat.txt");
+    return readFile(LittleFS, "/inputFloat.txt");
+  }
+  else if(var == "STREAM"){
+    char tmp[150];
+    char tmpsession[80];
+    sprintf(tmp,"http://192.168.0.210:8080/image/GrowTent?session=%s",tmpsession);
+    return tmp;
   }
   else if(var == "BUTTONPLACEHOLDER"){
     String buttons ="";
@@ -375,7 +386,7 @@ void updateTimer(char* state,char* timerString){
     if((selectedTimer-1) == i){
 
       timer[i] = value.toInt();
-      writeFile(SPIFFS,filename.c_str(),state);
+      writeFile(LittleFS,filename.c_str(),state);
       if(!timer[i]){relay[i]=HIGH;}
 
     }
@@ -404,7 +415,7 @@ void updateRelay(char* state,char* relayString){
   for(int i = 0; i <16;i++){
     if((selectedRelay-1) == i  )       {
       relay[i] = value.toInt();
-      writeFile(SPIFFS,filename.c_str(),state);
+      writeFile(LittleFS,filename.c_str(),state);
 
     }
 
@@ -423,11 +434,11 @@ void readSetRelays(){
     String timerFile = "timer"+String(i+1);
     String relayFile = "relay"+String(i+1);
 
-    String nameString = readFile(SPIFFS, ("/"+nameFile+".txt").c_str());
-    String startString = readFile(SPIFFS, ("/"+startFile+".txt").c_str());
-    String lenFloat = readFile(SPIFFS, ("/"+lenFile+".txt").c_str());
-    String timerInt = readFile(SPIFFS, ("/"+timerFile+".txt").c_str());
-    String relayInt = readFile(SPIFFS, ("/"+relayFile+".txt").c_str());
+    String nameString = readFile(LittleFS, ("/"+nameFile+".txt").c_str());
+    String startString = readFile(LittleFS, ("/"+startFile+".txt").c_str());
+    String lenFloat = readFile(LittleFS, ("/"+lenFile+".txt").c_str());
+    String timerInt = readFile(LittleFS, ("/"+timerFile+".txt").c_str());
+    String relayInt = readFile(LittleFS, ("/"+relayFile+".txt").c_str());
 
     if(nameString==""){
       names[i]="GPIO "+String(i+22)+" ";
@@ -536,4 +547,210 @@ void writeFile(fs::FS &fs, const char * path, const char * message){
     Serial.println("- write failed");
   }
   file.close();
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+const char* login( const char* hostIP, const char* user, const char* pass) {  // Method/function defined inside the class
+  //Serial.println("blueIris.login() Started");return "test";
+  //if(isDebug()){Serial.println("blueIris.login() Started");return "test";}
+
+  //return "test2";
+  bool debug = true;
+  
+  //debug = false;
+  const char* host = (const char*)hostIP;
+  const char* username = (const char*) user;
+  const char* password = (const char*)pass;
+
+  if(debug){Serial.println("host,user,and pass assigned)");}
+
+  HTTPClient http;
+  WiFiClient client;
+  http.useHTTP10(true);
+
+  if(debug){Serial.println("HTTP Client Started");}
+
+
+  //Generate initial JSON login command
+  StaticJsonDocument<200> message;//(2048); //allocate
+  message["cmd"] = "login"; //set JSON 
+
+  String initialMsg;//char initialMsg[128]; //Allocate string
+  serializeJson(message,initialMsg); //convert JSON object to string
+
+  if(debug){
+    Serial.println("Sending msg:\n-------------");
+    Serial.println(initialMsg);
+
+  }
+
+
+  //Begin JSON Transmission over HTTP
+  http.begin(client,host);//,(uint16_t)8080);     //Specify POST destination 
+  http.addHeader("Content-Type", "application/json"); //Add header to let server know this is a JSON msg
+  int postCode = http.POST(initialMsg) ;
+  if(debug){
+
+    Serial.print("Connectiong to: ");
+    Serial.println(host);
+    Serial.print("PostCode:");
+    Serial.println(postCode);
+  }
+
+
+  if(postCode == 200){
+
+  
+    // Parse retrieved JSON object
+    //DynamicJsonDocument doc(ESP.getMaxFreeBlockSize() - 512);//(192);
+    StaticJsonDocument<500> doc;
+    auto error = deserializeJson(doc, http.getStream());
+    if (error) {
+
+      if(debug){
+        Serial.println(F("Parsing response to initial login failed!"));
+      }
+      http.end();
+      return NULL;
+    }
+    http.end();
+
+    const char* result = doc["result"]; // "fail"
+    const char* tmpSession = doc["session"]; // "0e885c285f45408520193ece11f8419f"
+
+    if(strcmp(result,"fail") == 0){
+      if(debug){
+        const char* data_reason = doc["data"]["reason"]; // "missing response"
+        Serial.println(data_reason);
+      }
+      
+      //return NULL; ITS OK TO FAIL THE FIRST TIME
+    }
+    
+    if(debug){
+      String debugOutput;
+      serializeJson(doc,debugOutput);
+      Serial.println("Recieved Response\n------------");
+      Serial.println(debugOutput);
+    }
+
+    //Create login string with session information
+    char loginString[strlen(username)+strlen(password)+80] ;
+    sprintf(loginString,"%s:%s:%s",username,tmpSession,password);
+
+    unsigned char* hash = MD5::make_hash(loginString);
+    char* md5str = MD5::make_digest(hash,16);
+
+    //Generate JSON Message
+    message.clear(); //clear JSON doc
+    message["cmd"] = "login";
+    message["session"] = tmpSession;
+    message["response"] = md5str; //Set MD5 response
+
+    free(hash);
+    free(md5str);
+
+    //Allocate string
+    //char msgString[1024];
+    String msgString;
+    //Convert JSON object to string
+    serializeJson(message,msgString);
+
+    if(debug){
+      Serial.println("Sending Message2:\n-------------------");
+      Serial.println(msgString);
+    }
+
+    //Begin transmission over HTTP
+    http.begin(client,host);//,(uint16_t)8080);     //Specify POST destination
+    http.addHeader("Content-Type", "application/json");
+    int postCode2 = http.POST(msgString);
+    if(debug){
+      Serial.print("PostCode: ");
+      Serial.println(postCode2);
+    }
+    if( postCode2== 200){
+
+      if(debug){
+        Serial.println("Second MSG Recieved by Server OK");
+      }
+      
+      doc.clear();
+      auto error = deserializeJson(doc, http.getStream());
+      if (error) {
+        //http.end();
+
+        if(debug){
+          Serial.println(F("Parsing response to seconday login prompt failed!"));
+        }
+        //return NULL;
+      }
+
+      http.end();
+
+      
+
+      const char* result = doc["result"]; // "fail"
+      const char* tmpSession = doc["session"]; // "0e885c285f45408520193ece11f8419f"
+      if(debug){
+        Serial.println("Deserialization of response complete");
+        //Serial.print("result=");
+        //Serial.println(result);
+        //Serial.print("Session=");
+        //Serial.println(tmpSession);
+      }
+
+      if(strcmp(result,"fail") == 0){
+        if(debug){
+          const char* data_reason = doc["data"]["reason"]; // "missing response"
+          Serial.println(data_reason);
+        }
+        
+        return NULL;
+      }
+
+      if(debug){
+        //char debugOutput[1500];
+        //serializeJson(doc,debugOutput);
+        //Serial.println("Recieved Response\n------------");
+        //Serial.println(debugOutput);
+      }
+      //debug = true;
+      return tmpSession;
+    }
+    else{
+      http.end();  //Close connection
+      if(debug){
+        Serial.println("Error in response to MD5");
+      }
+      return NULL;
+
+    }
+  
+
+
+  }
+  else
+  {
+    http.end();  //Close connection
+    if(debug){
+      Serial.println("Error in response to initial login request");
+
+    }
+    return NULL;
+  }
+
+
+
 }

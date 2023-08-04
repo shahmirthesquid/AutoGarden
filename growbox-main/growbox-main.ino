@@ -10,7 +10,7 @@
 *********/
 #include "growboxFunctions.h"
 
-
+//http://192.168.0.210:8080/mjpg/FrontDoor/video.mjpg?session=2cd5755f56d84da40b5f169532656d01
 
 // HTML web page to handle 3 input fields (inputString, inputInt, inputFloat)
 const char index_html[] PROGMEM = R"rawliteral(
@@ -40,7 +40,7 @@ const char index_html[] PROGMEM = R"rawliteral(
   <script>
   
     function submitMessage() {
-      alert("Saved value to ESP SPIFFS");
+      alert("Saved value to ESP LittleFS");
       setTimeout(function(){ document.location.reload(true); }, 500);   
     }
 
@@ -141,11 +141,14 @@ const char index_html[] PROGMEM = R"rawliteral(
       }
     }, 1000);
 
-    //setInterval(function() {
-    //  imgObj = document.getElementById('img1');
-    //  imgObj.src ="http://192.168.0.104/auto.jpg?" + (new Date()).getTime();
-    //  
-    //}, 1000);
+   // setInterval(function() {
+
+
+   
+  
+      //imgObj = document.getElementById('img1');
+      //imgObj.src =imgObj.src;
+   // }, 1000);
 
 </script>
 
@@ -154,7 +157,9 @@ const char index_html[] PROGMEM = R"rawliteral(
   <p>Time: <span id="internalTime"></span></p>
 
   <label id="biError" style="display: block"><a href="http://99.255.0.148:8080" target="_blank">BlueIris</a> Video Stream:</label><br>
-  <!-- <img id="img1" border="0" class="center" src="http://192.168.0.104/auto.jpg?"><br> -->
+  <!-- 
+  <img id="img1" border="0" class="center" src="%STREAM%"><br> 
+  -->
 
   <div class="double">
     <form action="/get" target="hidden-form">
@@ -592,7 +597,8 @@ const char index_html[] PROGMEM = R"rawliteral(
 
 
 
-
+//BlueIris blueIris;
+//char session[80];
 
 const char* PARAM_INPUT_1 = "state";
 const char* PARAM_INPUT_2 = "timer";
@@ -657,38 +663,58 @@ bool drain = false;
 
 
 
+#ifdef USE_SERIAL
+#  define sp(v)         Serial.print(v)
+#  define spln(v)       Serial.println(v)
+#  define spln2(u, v)   Serial.print(u); Serial.println(v)
+#  define spf(v, ...)   Serial.printf(v, ##__VA_ARGS__)
+#else // USE_SERIAL
+#  define sp(v)
+#  define spln(v)
+#  define spln2(u, v)
+#  define spf(v, ...)
+#endif // USE_SERIAL
+
+
+
 
 void processCall(String command){
-      DynamicJsonBuffer jsonBuffer;
-      JsonObject& root= jsonBuffer.parseObject(command);
-      
-       if (root.success()) {
-          int gpio = atoi(root["gpio"]);
-          Serial.println(gpio);
-          int state = atoi(root["state"]);
-          Serial.println(state);
 
-          if (gpio == 1 && state == 1){
-            runoff = true;
-          }
-          else if(gpio == 1 && state == 0){
-            runoff = false;
-          }
-          //set GPIO state  
-          ////////////////////////////////////////////////////////////////////digitalWrite(gpio, state);
-          //digitalWrite(PE0, state);
-       }
+  int debug = 1;
+  if(debug){Serial.print("PARSING:  ");Serial.println(command);}
+  
+  
+  Serial.println("TRYING TO PROCESS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+  if (command.charAt(0)=='1'){
+    Serial.println("Runoff set to ON !");
+    runoff = true;
+  }
+  else if(command.charAt(0)=='0'){
+    Serial.println("Runoff set to OFF !");
+    runoff = false;
+  }
+  if(command.charAt(1)=='1'){
+    Serial.println("Drain set to ON !");
+    lastDrainTime = millis();
+  }
+  
+  //set GPIO state  
+  ////////////////////////////////////////////////////////////////////digitalWrite(gpio, state);
+  //digitalWrite(PE0, state);
+  
 }
 
 
 // function that executes when data is received from master
 void receiveEvent(int howMany) {
+  //howMany++;
   String data="";
  while (0 <Wire.available()) {
     char c = Wire.read();     
     data += c;
     
   }
+  Serial.print("RECEIVED:  ");
     Serial.println(data);           
     processCall(data);         
 }
@@ -702,16 +728,17 @@ void setup() {
 //digitalWrite(output, LOW);
 //pinMode(buttonPin, INPUT);
 
+//blueIris.begin ("Khan - 2G","fatima2005","http://192.168.0.210:8080/json","shahmir","khan",true);
 
 // Initialize SPIFFS-------------
 #ifdef ESP32
-  if (!SPIFFS.begin(true)) {
-    Serial.println("An Error has occurred while mounting SPIFFS");
+  if (!LittleFS.begin(true)) {
+    Serial.println("An Error has occurred while mounting LittleFS");
     return;
   }
 #else
-  if (!SPIFFS.begin()) {
-    Serial.println("An Error has occurred while mounting SPIFFS");
+  if (!LittleFS.begin()) {
+    Serial.println("An Error has occurred while mounting LittleFS");
     return;
   }
 #endif
@@ -749,6 +776,9 @@ void setup() {
 
   Wire.onReceive(receiveEvent);
 
+  
+  //strcpy(session,login("http://192.168.0.210:8080/json","shahmir","khan"));
+
 
 
 
@@ -772,14 +802,17 @@ void loop() {
     Serial.println("name" + String(i + 1) + " IS " + names[i] + "   start" + String(i + 1) + ": " + startTimes[i] + "   Timer" + String(i + 1) + ": " + timer[i] + "    len" + String(i + 1) + ": " + String(timeLengths[i]));
   }
 
+  //Serial.print("SESSION IS ");
+  //Serial.println(session);
+
   delay(1000);
 
-  if(digitalRead(D5)==LOW){
-    lastDrainTime = millis();
-  }
+  //if(digitalRead(D5)==LOW){
+  //  lastDrainTime = millis();
+  //}
 
-  Wire.requestFrom(8, 25);
-  receiveEvent(25);
+  Wire.requestFrom(8, 10);
+  receiveEvent(10);
 
 
   for (int i = 0; i < 16; i++) {
@@ -820,7 +853,7 @@ void loop() {
     }
 
     if(names[i] == "Drain Pump"){
-      if(millis() > (lastDrainTime + 30000)   ){
+      if( (unsigned long) (millis() - lastDrainTime) > 30000   ){
         relay[i]= HIGH; //set relay off
       }
       else{

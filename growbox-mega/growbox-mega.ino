@@ -1,107 +1,155 @@
-/*
-  Blink
+//Shahmir Khan
+//All rights reserved
+//growbox-mega
 
-  Turns an LED on for one second, then off for one second, repeatedly.
+#include <Wire.h> //i2c library
+#include <ArduinoJson.h> //json parser library
+unsigned long timeSinceLastMsg; //time variable to keep track of error state
 
-  Most Arduinos have an on-board LED you can control. On the UNO, MEGA and ZERO
-  it is attached to digital pin 13, on MKR1000 on pin 6. LED_BUILTIN is set to
-  the correct LED pin independent of which board is used.
-  If you want to know what pin the on-board LED is connected to on your Arduino
-  model, check the Technical Specs of your board at:
-  https://www.arduino.cc/en/Main/Products
 
-  modified 8 May 2014
-  by Scott Fitzgerald
-  modified 2 Sep 2016
-  by Arturo Guadalupi
-  modified 8 Sep 2016
-  by Colby Newman
-
-  This example code is in the public domain.
-
-  https://www.arduino.cc/en/Tutorial/BuiltInExamples/Blink
-*/
-
-//const int pin[16] = {PA0,PA1,PA2,PA3,PA4,PA5,PA6,PA7,PC7,PC6,PC5,PC4,PC3,PC2,PC1,PC0};
-#include <Wire.h>
-#include <ArduinoJson.h>
-unsigned long time;
-// the setup function runs once when you press reset or power the board
 void setup() {
-  //Serial.begin(115200);
-  // initialize digital pin LED_BUILTIN as an output.
-  time = millis();
+
+  Serial.begin(115200); //start serial
+
+  timeSinceLastMsg = millis();// set time to current time 
+
   Wire.begin(8);                /* join i2c bus with address 8 */
-  Wire.onReceive(receiveEvent); /* register receive event */
-  Wire.onRequest(requestEvent);
-  //pinMode(3, OUTPUT);
-  //pinMode(PE0,OUTPUT);
+  Wire.onReceive(receiveEvent); /* register receive event */ // do receive event when master tries to talk 
+  Wire.onRequest(requestEvent); // do requestEvent when you want to update master about sensors
+
+  //Setup Relay output pins
   for(int i =22;i<=37;i++){
     pinMode(i,OUTPUT);
     digitalWrite(i,HIGH);
   }
 
-  pinMode(1,INPUT_PULLUP);
+  //Setup Sensor Input pins
+  for(int i = 1;i<=10;i++){
+    pinMode(i,INPUT_PULLUP);
+  }
+
+
 }
+
+
 
 // the loop function runs over and over again forever
 void loop() {
-  if(millis() > time+5000){
+  //If no msgs from master for more than 5 sec turn everything off
+  if( (unsigned long)   (millis() - timeSinceLastMsg) > 5000){ // Does not get messed up when internal arduino time int resets to 0 after a month
+    Serial.println("NO MESSAGES RECEIVED IN LAST 5 SEC!!!");
+    Serial.println("TURNING OFF RELAYS FOR SAFETY!");
     for(int i =22;i<=37;i++){
       pinMode(i,OUTPUT);
       digitalWrite(i,HIGH);
     }
   }
 
+  delay(100);
 
- delay(100);
 }
 
 void processCall(String command){
-      DynamicJsonBuffer jsonBuffer;
-      JsonObject& root= jsonBuffer.parseObject(command);
-      
-       if (root.success()) {
-          time = millis();
-          int gpio = atoi(root["gpio"]);
-          Serial.println(gpio);
-          int state = atoi(root["state"]);
-          Serial.println(state);
 
-          //set GPIO state  
-          digitalWrite(gpio, state);
-          //digitalWrite(PE0, state);
-       }
+  StaticJsonDocument<100> doc; //create local json doc, only needs 64 but i gave 100
+
+  DeserializationError error = deserializeJson(doc,command); //store errors during deserialization
+
+  if(error){ //check for errors, if error then print and return
+    Serial.print(F("deserializeJson() failed: "));
+    Serial.println(error.f_str());
+    return;
+  }
+
+  //only gets here if there are no errors
+
+  timeSinceLastMsg = millis(); //time since last msg from master is reset 
+
+  int gpio = doc["gpio"];
+  Serial.print("GPIO was parsed as: ");
+  Serial.println(gpio);
+
+  int state = doc["state"];
+  Serial.print("State was parsed as: ");
+  Serial.println(state);
+
+  //set GPIO state  
+  digitalWrite(gpio, state);
+       
 }
 
 
 // function that executes when data is received from master
 void receiveEvent(int howMany) {
   String data="";
- while (0 <Wire.available()) {
+  while (0 < Wire.available()) {
     char c = Wire.read();     
     data += c;
-    
   }
-    Serial.println(data);           
-    processCall(data);         
+  Serial.print("RECEIVED:  ");
+  Serial.println(data);           
+  processCall(data);         
 }
 
 void requestEvent(){
-  if(digitalRead(1)==LOW){
-    String tmp;
-    tmp+="{\"gpio\":";
-    tmp+=1;
-    tmp+=",\"state\":1}";
-    Wire.write(tmp.c_str());   
+
+  
+  int max = 10;
+  String tmp;
+  for(int i = 0;i<max;i++){
+    if(digitalRead(i+1)==HIGH){
+      tmp+=0;
+    }
+    else{
+      tmp+=1;
+    }
   }
-  else if(digitalRead(1)==HIGH){
-    String tmp;
-    tmp+="{\"gpio\":";
-    tmp+=1;
-    tmp+=",\"state\":0}";
-    Wire.write(tmp.c_str()); 
+  //tmp[max+1]='\0';
+
+  //String temp;
+  //temp = "hello11";
+  Wire.write(tmp.c_str());
+
+  /*
+
+  int max = 2;
+
+  String tmp;
+  tmp+="{";
+  for(int i = 1 ; i <= max; i ++){
+    tmp+="\"gpio";
+    tmp+=i;
+    tmp+="\":";
+    if(digitalRead(i)==LOW){
+      tmp+="1";
+      //Wire.write(tmp.c_str());   
+      //Wire.endTransmission();
+    }
+    else if(digitalRead(i)==HIGH){
+      tmp+="0";
+    }
+
+    if(i<max){
+      tmp+=",";
+    }
+    else{
+      tmp+="}";
+    }
+      //String tmp;
+      //tmp+="{\"gpio\":";
+      //tmp+=i;
+      //tmp+=",\"state\":0}";
+      //Wire.endTransmission(); 
+    
+
   }
+  Serial.println("SendingMsg: ");
+  Serial.println(tmp.c_str());
+  //Wire.write(tmp.c_str());
+  //Wire.write("hello");
+  Wire.write(tmp.c_str() );
+  //Wire.endTransmission();
+  */
 
 
 }
