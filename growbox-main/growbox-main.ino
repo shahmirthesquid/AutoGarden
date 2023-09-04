@@ -613,7 +613,9 @@ String startTimes[16];  // = {start1,start2,start3,start4,start5,start6};
 float timeLengths[16];  //={len1,len2,len3,len4,len5,len6};
 
 
-unsigned long lastDrainTime;
+unsigned long sinceLastDrainTime;
+unsigned long sinceLastSerialMsg;
+unsigned long sinceLastNTP;
 
 
 // Variables will change:
@@ -695,8 +697,9 @@ void processCall(String command){
   }
   if(command.charAt(1)=='1'){
     Serial.println("Drain set to ON !");
-    lastDrainTime = millis();
+    sinceLastDrainTime = millis();
   }
+  // no off condition for drain pump cuz it should stay on for a full 30 secs after being triggered.
   
   //set GPIO state  
   ////////////////////////////////////////////////////////////////////digitalWrite(gpio, state);
@@ -717,6 +720,13 @@ void receiveEvent(int howMany) {
   Serial.print("RECEIVED:  ");
     Serial.println(data);           
     processCall(data);         
+}
+
+bool hasBeen(int seconds,unsigned long sinceLast){
+  if( (unsigned long)   (millis() - sinceLast) > (unsigned long) seconds){
+    return true;
+  }
+  return false;
 }
 
 
@@ -776,7 +786,8 @@ void setup() {
 
   Wire.onReceive(receiveEvent);
 
-  
+  sinceLastSerialMsg = millis();
+  sinceLastNTP = millis() - 60000;
   //strcpy(session,login("http://192.168.0.210:8080/json","shahmir","khan"));
 
 
@@ -786,33 +797,44 @@ void setup() {
 
 void loop() {
 
-  timeClient.update();
-  formattedTime = timeClient.getFormattedTime();
-  Serial.println(formattedTime);
-  hour = timeClient.getHours();
-  minute = timeClient.getMinutes();
-
-
-  for (int i = 0; i < 16; i++) {
-    Serial.print("Relay(Inverted)");
-    Serial.print((i + 1));
-    Serial.print("\nStatus: ");
-    Serial.print(relay[i]);
-    Serial.println();
-    Serial.println("name" + String(i + 1) + " IS " + names[i] + "   start" + String(i + 1) + ": " + startTimes[i] + "   Timer" + String(i + 1) + ": " + timer[i] + "    len" + String(i + 1) + ": " + String(timeLengths[i]));
+  if(hasBeen(1000,sinceLastNTP)){
+    sinceLastNTP = millis();
+    timeClient.update();
+    formattedTime = timeClient.getFormattedTime();
+    Serial.println(formattedTime);
+    
+    hour = timeClient.getHours();
+    minute = timeClient.getMinutes();
   }
+
+
+
+
 
   //Serial.print("SESSION IS ");
   //Serial.println(session);
 
-  delay(1000);
+  //delay(1000);
 
   //if(digitalRead(D5)==LOW){
   //  lastDrainTime = millis();
   //}
-
-  Wire.requestFrom(8, 10);
-  receiveEvent(10);
+  if(hasBeen(1000,sinceLastSerialMsg)){
+    sinceLastSerialMsg = millis();
+    Wire.requestFrom(8, 10);
+    receiveEvent(10);
+    Serial.println();
+    /*
+    for (int i = 0; i < 16; i++) {
+      Serial.print("Relay(Inverted)");
+      Serial.print((i + 1));
+      Serial.print("\nStatus: ");
+      Serial.print(relay[i]);
+      Serial.println();
+      Serial.println("name" + String(i + 1) + " IS " + names[i] + "   start" + String(i + 1) + ": " + startTimes[i] + "   Timer" + String(i + 1) + ": " + timer[i] + "    len" + String(i + 1) + ": " + String(timeLengths[i]));
+    }
+    */
+  }
 
 
   for (int i = 0; i < 16; i++) {
@@ -844,7 +866,7 @@ void loop() {
           tmp += "/relay";
           tmp += (i + 1);
           tmp += ".txt";
-          //writeFile(SPIFFS, tmp.c_str(), "1");
+          //writeFile(SPIFFS, tmp.c_str(), "1"); no need to wear out the memory with this
 
         } else {
           relay[i] = LOW;
@@ -853,7 +875,8 @@ void loop() {
     }
 
     if(names[i] == "Drain Pump"){
-      if( (unsigned long) (millis() - lastDrainTime) > 30000   ){
+      //if( (unsigned long) (millis() - lastDrainTime) > 30000   ){
+      if(hasBeen(30000,sinceLastDrainTime)){
         relay[i]= HIGH; //set relay off
       }
       else{

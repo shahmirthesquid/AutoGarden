@@ -26,7 +26,7 @@ void serverSetup(){
 
   // Send web page with input fields to client
   server.on("/", HTTP_GET, [](AsyncWebServerRequest *request){
-    
+    /*
     timeClient.update();
     unsigned long epochTime = timeClient.getEpochTime(); 
     String formattedTime = timeClient.getFormattedTime();
@@ -42,6 +42,7 @@ void serverSetup(){
   
     formattedTime = timeClient.getFormattedTime(); 
     Date = String(currentYear) + "-" + String(currentMonth) + "-" + String(monthDay);
+    */
     request->send_P(200, "text/html", index_html, processor);
   });
   
