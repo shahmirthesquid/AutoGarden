@@ -53,35 +53,62 @@ void serverSetup(){
 
     for(int i = 0;i<16;i++){
       //delay(5);
-      String name = "name"+String(i+1);
-      String startTime = "start"+String(i+1);
-      String timeLen = "len"+String(i+1);
-      String relayFile = "relay"+String(i+1);
+      char name[16];
+      char startTime[16];
+      char timeLen[16];
+      char relayFile[16];
+
+      sprintf(name,"name%d",i+1);
+      sprintf(startTime,"start%d",i+1);
+      sprintf(timeLen,"len%d",i+1);
+      sprintf(relayFile,"relay%d",i+1);
+
+      //String name = "name"+String(i+1);
+      //String startTime = "start"+String(i+1);
+      //String timeLen = "len"+String(i+1);
+      //String relayFile = "relay"+String(i+1);
 
       if (request->hasParam(name)) {
         inputMessage = request->getParam(name)->value();
         Serial.println(inputMessage);
-        writeFile(LittleFS, ("/"+name+".txt").c_str(), inputMessage.c_str());
+
+        char fileName[16];
+        sprintf(fileName,"/%s.txt",name);
+
+        writeFile(LittleFS, fileName, inputMessage.c_str());
         names[i]=inputMessage;
       }
       // GET inputInt value on <ESP_IP>/get?inputInt=<inputMessage>
       else if (request->hasParam(startTime)) {
         //Serial.println("GOT HERE!!!!!!!!");
         inputMessage = request->getParam(startTime)->value();
-        writeFile(LittleFS, ("/"+startTime+".txt").c_str(), inputMessage.c_str());
+
+        char fileName[16];
+        sprintf(fileName,"/%s.txt",startTime);
+        writeFile(LittleFS, fileName, inputMessage.c_str());
+
         startTimes[i]=inputMessage;
 
+
         relay[i]=HIGH; // turn off relay
-        writeFile(LittleFS, ("/"+relayFile+".txt").c_str(), "1"); 
+        
+        sprintf(fileName,"/%s.txt",relayFile);
+        writeFile(LittleFS, fileName, "1"); 
       }
       // GET inputFloat value on <ESP_IP>/get?inputFloat=<inputMessage>
       else if (request->hasParam(timeLen)) {
         inputMessage = request->getParam(timeLen)->value();
-        writeFile(LittleFS, ("/"+timeLen+".txt").c_str(), inputMessage.c_str());
+
+        char fileName[16];
+        sprintf(fileName,"/%s.txt",timeLen);
+        writeFile(LittleFS, fileName, inputMessage.c_str());
+
         timeLengths[i]=inputMessage.toFloat();
 
         relay[i]=HIGH; // turn off relay
-        writeFile(LittleFS, ("/"+relayFile+".txt").c_str(), "1"); 
+        
+        sprintf(fileName,"/%s.txt",relayFile);
+        writeFile(LittleFS, fileName, "1"); 
       }
       else {
         inputMessage = "No message sent";
@@ -95,12 +122,20 @@ void serverSetup(){
   
     // Send a GET request to <ESP_IP>/update?state=<inputMessage>
   server.on("/update", HTTP_GET, [] (AsyncWebServerRequest *request) {
+
+    int debug =0;
     String inputMessage;
     String inputParam;
     // GET input1 value on <ESP_IP>/update?state=<inputMessage>
     if (request->hasParam(PARAM_INPUT_1)) {//relay state update
       inputMessage = request->getParam(PARAM_INPUT_1)->value();
       inputParam = PARAM_INPUT_1;
+
+      if(debug){
+        Serial.println("/update inputMessage:");
+        Serial.print(inputMessage);
+        Serial.println();
+      }
 
       char strings[4][10] = {0};
       byte index = 0;  // index to index the strings array
@@ -121,6 +156,12 @@ void serverSetup(){
     else if (request->hasParam(PARAM_INPUT_2)) {//timer state update
       inputMessage = request->getParam(PARAM_INPUT_2)->value();
       inputParam = PARAM_INPUT_2;
+
+      if(debug){
+        Serial.println("/update inputMessage:");
+        Serial.print(inputMessage);
+        Serial.println();
+      }
 
         char strings[4][10] = {0};
         byte index = 0;  // index to index the strings array
@@ -164,14 +205,32 @@ void serverSetup(){
 
     // Send a GET request to <ESP_IP>/state
   server.on("/timer", HTTP_GET, [] (AsyncWebServerRequest *request) {//get state of timer checks c1,c2,c3,etc
+    
+    int debug =0;
+
     String inputMessage;
     String inputParam;
     if (request->hasParam(PARAM_INPUT_1)) {
       inputMessage = request->getParam(PARAM_INPUT_1)->value();
       inputParam = PARAM_INPUT_1;
+      if(debug){
+        Serial.print("inputMessage:");
+        Serial.println(inputMessage);
+
+        Serial.print("inputParam:");
+        Serial.println(inputParam);
+
+
+      }
       for(int i = 0; i <16;i++){
         if(inputMessage==String(i+1)) {
-          request->send(200, "text/plain", String(timer[i]).c_str());
+          request->send(200, "text/plain", String(timer[i]) );
+
+          if(debug){
+            Serial.printf("!inputMessage = %d!\nactual state: %d\n",i+1,timer[i]);
+            Serial.println("sent state: ");
+            Serial.println(String(timer[i]) );
+          }
           //Serial.println(timer[i]);
         }        
       }
@@ -179,7 +238,9 @@ void serverSetup(){
   });
   
   server.on("/time", HTTP_GET, [] (AsyncWebServerRequest *request) {
-    request->send(200, "text/plain", formattedTime);
+    char tmp[64];
+    sprintf(tmp,"%s  --  Bytes Free: %d",formattedTime.c_str(), ESP.getFreeHeap());
+    request->send(200, "text/plain", tmp);
 
   });
 
@@ -196,97 +257,134 @@ void serverSetup(){
 String processor(const String& var){
   //Serial.println(var);
   for(int i = 0;i<16;i++){
-    String nameStart ="NAME";
-    String timerStart = "TIMER";
-    String isHiddenStart = "ISHIDDEN";
-    String startStart = "START";
-    String lenStart = "LEN";
-    String relayStart = "RELAY";
-    nameStart += (i+1);
-    timerStart += (i+1);
-    isHiddenStart += (i+1);
-    startStart += (i+1);
-    lenStart += (i+1);
-    relayStart += (i+1);
-    if(var == nameStart){
+    char nameStart[16];
+    char timerStart[16] ;
+    char isHiddenStart[16] ;
+    char startStart[16];
+    char lenStart[16];
+    char relayStart[16];
+
+    sprintf(nameStart,"NAME%d",i+1);
+    sprintf(timerStart,"TIMER%d",i+1);
+    sprintf(isHiddenStart,"ISHIDDEN%d",i+1);
+    sprintf(startStart,"START%d",i+1);
+    sprintf(lenStart,"LEN%d",i+1);
+    sprintf(relayStart,"RELAY%d",i+1);
+
+    if(strcmp(var.c_str(),nameStart)==0){
       return names[i];
     }
-    else if( var == timerStart){
-      return outputState(!timer[i]);
+    else if(strcmp(var.c_str(),timerStart)==0){
+      char timerStateOutput[16]; 
+      return outputStateChar (timerStateOutput, !timer[i] );
     }
-    else if( var == isHiddenStart){
-      return outputState(relay[i]);
+    else if(strcmp(var.c_str(),isHiddenStart)==0){
+      char stateOutput[16]; 
+      return outputStateChar(stateOutput, relay[i] );
     }
-    else if( var == startStart){
+    else if(strcmp(var.c_str(),startStart)==0){
       return startTimes[i];
     }
-    else if( var == lenStart){
-      return String(timeLengths[i]);
+    else if(strcmp(var.c_str(),lenStart)==0){
+      char output[STR_BUFFER];
+      sprintf(output,"%f",timeLengths[i]);
+      return output;
+      //return String(timeLengths[i]);
     }
-    else if( var == relayStart){
-      return String(relay[i]);
+    else if(strcmp(var.c_str(),relayStart)==0){
+      char output[STR_BUFFER];
+      sprintf(output,"%d",relay[i]);
+      return output;
+      //return String(relay[i]);
     }
 
   }
 
-  if(var == "inputString"){
-    return readFile(LittleFS, "/inputString.txt");
+  if(strcmp(var.c_str(),"inputString")==0){
+    char tmp[STR_BUFFER];
+    return readFileAsChar(tmp,STR_BUFFER,LittleFS, "/inputString.txt");
   }
-  else if(var == "inputInt"){
-    if( readFile(LittleFS, "/inputInt.txt")=="1"){
+  else if(strcmp(var.c_str(),"inputInt")==0){
+    char fileOutput[16];
+    readFileAsChar(fileOutput,16, LittleFS, "/inputInt.txt");
+
+    if(strcmp( fileOutput,"1")==0){
       return "\"1\" Checked";
     }
     else{
       return "\"0\"";
     }
   }
-  else if(var == "inputFloat"){
-    return readFile(LittleFS, "/inputFloat.txt");
+  else if(strcmp(var.c_str(),"inputFloat")==0){
+    char tmp[16];
+    return readFileAsChar(tmp,16,LittleFS, "/inputFloat.txt");
   }
-  else if(var == "STREAM"){
+  else if(strcmp(var.c_str(),"STREAM")==0){
     char tmp[150];
     char tmpsession[80];
     sprintf(tmp,"http://192.168.0.210:8080/image/GrowTent?session=%s",tmpsession);
     return tmp;
   }
-  else if(var == "BUTTONPLACEHOLDER"){
-    String buttons ="";
+  else if(strcmp(var.c_str(),"BUTTONPLACEHOLDER")==0){
+    char buttons[2000 * 16] ;//2000byte buffer for each relay * 16 relays
+    //String buttons ="";
 
-    for(int i = 0;i<14;i++){
-      //delay(10);
-      String relayStateValue = outputState(relay[i]);
-      String timerStateValue = outputState(!timer[i]);
-      String isHidden;
-      if(timer[i]){isHidden = "block";}
-      else{isHidden="none";}
-      String curNum = "";
-      curNum+=(i+1);
-      String curTime = "";
-      curTime+=timeLengths[i];
+    for(int i = 0;i<16;i++){
 
-      //Serial.println("relayStateValue: "+relayStateValue);
-      //Serial.println("timerStateValue: "+timerStateValue);
-      //Serial.println("isHidden: "+isHidden);
+      char relayStateValue[16];
+      char timerStateValue[16];
+      char isHidden[16];
+      if(!relay[i]){
+        strcpy(relayStateValue,"checked");
+      }
+      else{
+        strcpy(relayStateValue,"");
+      }
+      if(timer[i]){
+        strcpy(timerStateValue,"checked");
+      }
+      else{
+        strcpy(timerStateValue,"");
+      }
+      //strcpy(relayStateValue, outputStateChar(relay[i]));
+      //strcpy(timerStateValue, outputStateChar(!timer[i]));
 
-      buttons+="<div class=\"double\">\n";
-      buttons+="<form action=\"/get\" target=\"hidden-form\">\n";
-      buttons+="Set Name: <input type=\"text\" name=\"name"+curNum+"\" value=\""+names[i]+"\"> <input type=\"submit\" value=\"Submit\" onclick=\"submitMessage()\">\n";
-      buttons+="</form><br>\n";
-      buttons+= "<input type=\"checkbox\" id=\"c"+curNum+"\" onclick=\"showMe(this,'timer"+curNum+"')\" " + timerStateValue + ">Is this a timer?\n";
-      buttons+="<div id=\"timer"+curNum+"\" style=\"display: "+isHidden+";\">\n";
-      //buttons+="<script>hide('timer1')</script>\n";
-      buttons+="<form action=\"/get\" target=\"hidden-form\">\n";
-      buttons+="When to turn ON (current value "+startTimes[i]+"): <input type=\"time\" name=\"start"+curNum+"\" value=\""+startTimes[i]+"\"> <input type=\"submit\" value=\"Submit\" onclick=\"submitMessage()\">\n";
-      buttons+="</form><br>\n";
-      buttons+="<form action=\"/get\" target=\"hidden-form\">\n";
-      buttons+= "How many minutes to stay ON? (current value "+curTime+"): <input type=\"number\" min=\"0\" step=\"0.1\" name=\"len"+curNum+"\"> <input type=\"submit\" value=\"Submit\" onclick=\"submitMessage()\">\n";
-      buttons+="</form>\n";
-      buttons+="</div>\n";
-      buttons+= "<h4>"+names[i]+" - State <span id=\"outputState"+curNum+"\"></span></h4><label class=\"switch\"><input type=\"checkbox\" name=\"relay"+curNum+"\" onchange=\"toggleCheckbox(this)\" id=\"output"+curNum+"\" " + relayStateValue + "><span class=\"slider\"></span></label>";
-      buttons+="</div>\n";
+      if(timer[i]){strcpy(isHidden,"block");}
+      else{strcpy(isHidden,"none");}
+
+      int curNum = i+1;
+      //char curNum[16];
+      //char curTime[strlen(timeLengths[i]) + 16]; //issue
+
+      //sprintf(curNum,"%d",i+1);
+      //sprintf(curTime,"%f",timeLengths[i])
+
+      char tmpLine[128];
+
+      strcat(buttons,"<div class=\"double\">\n");
+      strcat(buttons,"<form action=\"/get\" target=\"hidden-form\">\n");
+      sprintf(tmpLine,"Set Name: <input type=\"text\" name=\"name%d\" value=\"%s\"> <input type=\"submit\" value=\"Submit\" onclick=\"submitMessage()\">\n",curNum,names[i].c_str());
+      strcat(buttons,tmpLine);
+      strcat(buttons,"</form><br>\n");
+      sprintf(tmpLine,"<input type=\"checkbox\" id=\"c%d\" onclick=\"showMe(this,'timer%d')\" %s>Is this a timer?\n",curNum,curNum,timerStateValue);
+      strcat(buttons,tmpLine);
+      sprintf(tmpLine,"<div id=\"timer%d\" style=\"display: %s;\">\n",curNum,isHidden);
+      strcat(buttons,tmpLine);
+      strcat(buttons,"<form action=\"/get\" target=\"hidden-form\">\n");
+      sprintf(tmpLine,"When to turn ON (current value %s): <input type=\"time\" name=\"start%d\" value=\"%s\"> <input type=\"submit\" value=\"Submit\" onclick=\"submitMessage()\">\n",startTimes[i].c_str(),curNum,startTimes[i].c_str());
+      strcat(buttons,tmpLine);
+      strcat(buttons,"</form><br>\n");
+      strcat(buttons,"<form action=\"/get\" target=\"hidden-form\">\n");
+      sprintf(tmpLine,"How many minutes to stay ON? (current value %.1f): <input type=\"number\" min=\"0\" max=\"1440\" step=\"0.1\" name=\"len%d\"> <input type=\"submit\" value=\"Submit\" onclick=\"submitMessage()\">\n",timeLengths[i],curNum);
+      strcat(buttons,tmpLine);
+      strcat(buttons,"</form>\n");
+      strcat(buttons,"</div>\n");
+      sprintf(tmpLine,"<h4>%s - State <span id=\"outputState%d\"></span></h4><label class=\"switch\"><input type=\"checkbox\" name=\"relay%d\" onchange=\"toggleCheckbox(this)\" id=\"output%d\" %s><span class=\"slider\"></span></label>",names[i].c_str(),curNum,curNum,curNum,relayStateValue);
+      strcat(buttons,tmpLine);
+      strcat(buttons,"</div>\n");
+
 
     }
-
 
 
     return buttons;
@@ -357,7 +455,9 @@ String processor(const String& var){
     return "<span id=\"internalTime\"></span>";
   }
   */
-  return String();
+  char emptyStr[16] = "";
+  //strcpy(emptyStr,"");
+  return emptyStr;
 }
 
 String outputState(int relay){
@@ -369,25 +469,52 @@ String outputState(int relay){
   }
   return "";
 }
+
+char* outputStateChar(char* destination, int relay){
+  if(!relay){
+    strcpy(destination,"checked");
+    return destination;
+  }
+  else {
+    strcpy(destination,"");
+    return destination;
+  }
+  strcpy(destination,"");
+  return destination;
+}
+
 void updateTimer(char* state,char* timerString){
 
-  String numberString = timerString;
-  String filename= "/";
-  filename += timerString;
-  filename+=".txt";
-  String value;
-  value = state;
-  //int selectedTimer = strtol(strtok(timerString,"timer"),NULL,10);
-  int selectedTimer = strtol(numberString.substring(5).c_str(),NULL,10);
+  //String numberString = timerString;
 
-  Serial.println("SELECTED TIMER IS "+String(selectedTimer));
+  int debug = 0;
+
+  char filename[16];
+  sprintf(filename,"/%s.txt",timerString);
+
+  //String filename= "/";
+  //filename += timerString;
+  //filename+=".txt";
+
+  //String value;
+  //value = state;
+  int selectedTimer = strtol(strtok(timerString,"timer"),NULL,10);
+  //int selectedTimer = timerString[5] - '0'; //strtol(numberString.substring(5).c_str(),NULL,10);
+  if(debug){
+    Serial.println("SELECTED TIMER IS "+String(selectedTimer));
+    printf("timerString is: %s\n\n",timerString);
+
+  }
 
   for(int i = 0; i <16;i++){
 
     if((selectedTimer-1) == i){
 
-      timer[i] = value.toInt();
-      writeFile(LittleFS,filename.c_str(),state);
+      timer[i] = state[0] - '0';
+
+      if(debug){printf("timer[%d] state: %d ... should be: %s\n\n",i,timer[i],state);}
+
+      writeFile(LittleFS,filename,state);
       if(!timer[i]){relay[i]=HIGH;}
 
     }
@@ -395,11 +522,23 @@ void updateTimer(char* state,char* timerString){
   }
 }
 void updateRelay(char* state,char* relayString){
-  String numberString = relayString;
+
+  int debug = 0;
+
+  char filename[16];
+  sprintf(filename,"/%s.txt",relayString);
+
+  //String numberString = relayString;
   //String serialOutput;
   //serialOutput+="{\"gpio\":";
-  int selectedRelay = strtol(numberString.substring(5).c_str(),NULL,10);  //strtol(strtok(relayString,"relay"),NULL,10)+21;
-  Serial.println("SELECTED RELAY IS "+String(selectedRelay));
+  //int selectedRelay = relayString[5] -'0'; //strtol(numberString.substring(5).c_str(),NULL,10);  
+  int selectedRelay = strtol(strtok(relayString,"relay"),NULL,10);
+  
+  if(debug){
+
+    Serial.println("SELECTED RELAY IS "+String(selectedRelay+21));
+    printf("relayString is: %s\n\n",relayString);
+  }
   //serialOutput+=selectedRelay;
   //serialOutput+=",\"state\":";
   //serialOutput+=state;
@@ -407,16 +546,19 @@ void updateRelay(char* state,char* relayString){
       //Wire.beginTransmission(8); 
       //Wire.write(tmp.c_str());  
       //Wire.endTransmission();    
-  String filename= "/";
-  filename += relayString;
-  filename+=".txt";
-  String value;
-  value = state;
+  //String filename= "/";
+  //filename += relayString;
+  //filename+=".txt";
+  //String value;
+  //value = state;
 
   for(int i = 0; i <16;i++){
     if((selectedRelay-1) == i  )       {
-      relay[i] = value.toInt();
-      writeFile(LittleFS,filename.c_str(),state);
+      relay[i] = state[0]-'0';
+
+      if(debug){printf("relay[%d] state: %d ... should be: %s\n\n",i,relay[i],state);}
+
+      writeFile(LittleFS,filename,state);
 
     }
 
@@ -429,59 +571,97 @@ void updateRelay(char* state,char* relayString){
 void readSetRelays(){
 
   for(int i = 0;i<16;i++){
-    String nameFile = "name"+String(i+1);
-    String startFile = "start"+String(i+1);
-    String lenFile = "len"+String(i+1);
-    String timerFile = "timer"+String(i+1);
-    String relayFile = "relay"+String(i+1);
 
-    String nameString = readFile(LittleFS, ("/"+nameFile+".txt").c_str());
-    String startString = readFile(LittleFS, ("/"+startFile+".txt").c_str());
-    String lenFloat = readFile(LittleFS, ("/"+lenFile+".txt").c_str());
-    String timerInt = readFile(LittleFS, ("/"+timerFile+".txt").c_str());
-    String relayInt = readFile(LittleFS, ("/"+relayFile+".txt").c_str());
+    //Generate filepaths-----------------------
+    char nameFile[16];
+    char startFile[16];
+    char lenFile[16];
+    char timerFile[16];
+    char relayFile[16];
 
-    if(nameString==""){
-      names[i]="GPIO "+String(i+22)+" ";
+    sprintf(nameFile,"/name%d.txt",i+1);
+    sprintf(startFile,"/start%d.txt",i+1);
+    sprintf(lenFile,"/len%d.txt",i+1);
+    sprintf(timerFile,"/timer%d.txt",i+1);
+    sprintf(relayFile,"/relay%d.txt",i+1);
+    //---------------------------------------------------------
+
+    //String nameFile = "name"+String(i+1);
+    //String startFile = "start"+String(i+1);
+    //String lenFile = "len"+String(i+1);
+    //String timerFile = "timer"+String(i+1);
+    //String relayFile = "relay"+String(i+1);
+
+    //String nameString = readFile(LittleFS, nameFile);
+    //String startString = readFile(LittleFS, startFile);
+    //String lenFloat = readFile(LittleFS, lenFile);
+    //String timerInt = readFile(LittleFS, timerFile);
+    //String relayInt = readFile(LittleFS, relayFile);
+
+
+    // Extract data from files ----------------------------------
+    char nameString[STR_BUFFER];
+    char startString[16];
+    char lenFloat[16];
+    char timerInt[16];
+    char relayInt[16];
+
+    readFileAsChar(nameString,STR_BUFFER,LittleFS,nameFile);
+    readFileAsChar(startString,16,LittleFS,startFile);
+    readFileAsChar(lenFloat,16,LittleFS,lenFile);
+    readFileAsChar(timerInt,16,LittleFS,timerFile);
+    readFileAsChar(relayInt,16,LittleFS,relayFile);
+    //-----------------------------------------------------------------------------
+
+
+
+    // If data not set, then set it to defaults, otherwise save data to program memory -----------
+    if(strcmp(nameString,"")==0){
+      char tmp[16];
+      sprintf(tmp,"GPIO %d",i+22);
+      //strcpy(names[i],tmp);
+      names[i]=tmp;//"GPIO "+String(i+22)+" ";
     }
     else{
+      //strcpy(names[i],nameString);
       names[i]=nameString;
     }
 
-    if(startString==""){
+    if(strcmp(startString,"")==0){
+      //strcpy(startTimes[i],"00:00");
       startTimes[i]="00:00";
     }
     else{
+      //strcpy(startTimes[i],startString);
       startTimes[i]=startString;
     }
 
-    if(lenFloat==""){
+    if(strcmp(lenFloat,"")==0){
       timeLengths[i]=0;
     }
     else{
-      timeLengths[i]=lenFloat.toFloat();
+      timeLengths[i]=atof(lenFloat);
+      //timeLengths[i]=lenFloat.toFloat();
     }
 
-    if(timerInt==""){
+    if(strcmp(timerInt,"")==0){
       timer[i]=0;
     }
     else{
-      timer[i]=timerInt.toInt();
+      timer[i]=atol(timerInt);
+      //timer[i]=timerInt.toInt();
     }
 
-    if(relayInt==""){
+    if(strcmp(relayInt,"")==0){
       relay[i]=HIGH;
     }
     else{
-      relay[i]=relayInt.toInt();
+      relay[i]=atol(relayInt);
+      //relay[i]=relayInt.toInt();
     }
 
+    //--------------------------------------------------------------------------------------------------------
     
-
-    //startTimes[i]=readFile(SPIFFS, ("/"+startFile+".txt").c_str());
-    //timeLengths[i]=readFile(SPIFFS, ("/"+lenFile+".txt").c_str());
-    //timer[i]=readFile(SPIFFS, ("/"+timerFile+".txt").c_str()).toInt();
-    //relay[i]=readFile(SPIFFS, ("/"+relayFile+".txt").c_str()).toInt();    
 
   }
 
@@ -491,22 +671,28 @@ void writeRelays(){
 
   for(int i = 0;i<16;i++){
     //delay(10);
-    if(relay[i]==HIGH){
-        String tmp;
-        tmp+="{\"gpio\":";
-        tmp+=i+22;
-        tmp+=",\"state\":1}";
+    if(relay[i]==LOW){
+        char tmp[32];
+        sprintf(tmp,"{\"gpio\":%d,\"state\":0}",i+22);
+        //String tmp;
+        //tmp+="{\"gpio\":";
+        //tmp+=i+22;
+        //tmp+=",\"state\":1}";
         Wire.beginTransmission(8); 
-        Wire.write(tmp.c_str());  
+        Wire.write(tmp);  
         Wire.endTransmission();     
     }
     else{
-        String tmp;
-        tmp+="{\"gpio\":";
-        tmp+=i+22;
-        tmp+=",\"state\":0}";
+        //String tmp;
+        //tmp+="{\"gpio\":";
+        //tmp+=i+22;
+        //tmp+=",\"state\":0}";
+
+        char tmp[32];
+        sprintf(tmp,"{\"gpio\":%d,\"state\":1}",i+22);
+
         Wire.beginTransmission(8); 
-        Wire.write(tmp.c_str());  
+        Wire.write(tmp);  
         Wire.endTransmission();   
     }
 
@@ -533,6 +719,28 @@ String readFile(fs::FS &fs, const char * path){
   file.close();
   Serial.println(fileContent);
   return fileContent;
+}
+
+char* readFileAsChar(char* destination,int bufsize,fs::FS &fs, const char * path){
+  Serial.printf("Reading file: %s\r\n", path);
+  File file = fs.open(path, "r");
+  if(!file || file.isDirectory()){
+    Serial.println("- empty file or failed to open file");
+    
+    strcpy(destination,"");
+    return destination;
+  }
+  Serial.println("- read from file:");
+  //char* fileContent = (char*) malloc((sizeof(char) * STR_BUFFER)+1);
+  if(bufsize>STR_BUFFER){bufsize = STR_BUFFER;}
+  int filePosition=0;
+  while(file.available() && (filePosition<bufsize) ){
+    destination[filePosition]=(char)file.read();
+    filePosition++;
+  }
+  file.close();
+  Serial.println(destination);
+  return destination;
 }
 
 void writeFile(fs::FS &fs, const char * path, const char * message){

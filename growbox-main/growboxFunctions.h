@@ -13,11 +13,14 @@
 #include <ESPAsyncWebServer.h>
 #include <WiFiUdp.h>
 #include <NTPClient.h>
+#include <TimeLib.h>
+#include <time.h>
+#include <Timezone.h>
 #include <Wire.h>
 #include <ArduinoJson.h>
 #include <LittleFS.h>
 
-
+#define STR_BUFFER 100
 //#include <WiFiClient.h> 
 #include <ESP8266HTTPClient.h> //esp8266
 //#include <ArduinoJson.h>
@@ -25,9 +28,11 @@
 
 void notFound(AsyncWebServerRequest *request);
 String readFile(fs::FS &fs, const char * path);
+char* readFileAsChar(char* destination,int bufsize, fs::FS &fs, const char * path);
 
 void writeFile(fs::FS &fs, const char * path, const char * message);
 String outputState(int relay);
+char* outputStateChar(char* destination, int relay);
 String processor(const String& var);
 void serverSetup();
 void readSetRelays();

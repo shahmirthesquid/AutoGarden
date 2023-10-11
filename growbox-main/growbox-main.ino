@@ -159,6 +159,9 @@ const char index_html[] PROGMEM = R"rawliteral(
   <label id="biError" style="display: block"><a href="http://99.255.0.148:8080" target="_blank">BlueIris</a> Video Stream:</label><br>
   <!-- 
   <img id="img1" border="0" class="center" src="%STREAM%"><br> 
+
+  <img src="/api/camera_proxy_stream/camera.khansecurityserver_grow_tent?token=58a6ff61480b689ba2ba7bc2362dbd0ea8ec962bf4ab5e0000618cf104374b26" alt="Preview of the KhanSecurityServer Grow Tent camera.">
+
   -->
 
   <div class="double">
@@ -628,10 +631,12 @@ String Date;
 int Day;
 int Month;
 int Year;
-int hour = 0;
-int minute = 0;
-int second = 0;
+int curHour = 0;
+int curMinute = 0;
+int curSecond = 0;
 int totalSec = 0;
+unsigned long epochTime;
+struct tm* dateTimeStructure;
 
 
 // the following variables are unsigned longs because the time, measured in
@@ -641,12 +646,19 @@ unsigned long debounceDelay = 50;    // the debounce time; increase if the outpu
 
 // A UDP instance to let us send and receive packets over UDP
 WiFiUDP ntpUDP;
-const long utcOffsetInSeconds = -18000;
+//const long utcOffsetInSeconds = -18000;
 //UTC X = X * 60 * 60
 //UTC 8 = 8 * 60 * 60 = 28800
-NTPClient timeClient(ntpUDP, "pool.ntp.org", utcOffsetInSeconds);
-unsigned long epochTime = timeClient.getEpochTime();
+//NTPClient timeClient(ntpUDP, "pool.ntp.org", utcOffsetInSeconds);
+int GTMOffset = 0; // SET TO UTC TIME
+NTPClient timeClient(ntpUDP, "pool.ntp.org", GTMOffset*60*60, 60*60*1000);
+//unsigned long epochTime = timeClient.getEpochTime();
 struct tm* ptm = gmtime((time_t*)&epochTime);
+// US Eastern Time Zone (New York, Detroit)
+TimeChangeRule usEDT = {"EDT", Second, Sun, Mar, 2, -240};  // Eastern Daylight Time = UTC - 4 hours
+TimeChangeRule usEST = {"EST", First, Sun, Nov, 2, -300};   // Eastern Standard Time = UTC - 5 hours
+Timezone usET(usEDT, usEST);
+ 
 
 AsyncWebServer server(80);
 
@@ -677,21 +689,50 @@ bool drain = false;
 #  define spf(v, ...)
 #endif // USE_SERIAL
 
-
+/**
+ * Input time in epoch format and return tm time format
+ * by Renzo Mischianti <www.mischianti.org> 
+ */
+static tm getDateTimeByParams(long time){
+    struct tm *newtime;
+    const time_t tim = time;
+    newtime = localtime(&tim);
+    return *newtime;
+}
+/**
+ * Input tm time format and return String with format pattern
+ * by Renzo Mischianti <www.mischianti.org>
+ */
+static String getDateTimeStringByParams(tm *newtime, char* pattern = (char *)"%d/%m/%Y %H:%M:%S"){
+    char buffer[30];
+    strftime(buffer, 30, pattern, newtime);
+    return buffer;
+}
+ 
+/**
+ * Input time in epoch format format and return String with format pattern
+ * by Renzo Mischianti <www.mischianti.org> 
+ */
+static String getEpochStringByParams(long time, char* pattern = (char *)"%d/%m/%Y %H:%M:%S"){
+    //struct tm *newtime;
+    tm newtime;
+    newtime = getDateTimeByParams(time);
+    return getDateTimeStringByParams(&newtime, pattern);
+}
 
 
 void processCall(String command){
 
   int debug = 1;
-  if(debug){Serial.print("PARSING:  ");Serial.println(command);}
+  if(debug){Serial.print("PARSING SENSORS:  ");Serial.println(command);}
   
   
-  Serial.println("TRYING TO PROCESS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
-  if (command.charAt(0)=='1'){
+  //Serial.println("TRYING TO PROCESS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+  if (command.charAt(2)=='1'){
     Serial.println("Runoff set to ON !");
     runoff = true;
   }
-  else if(command.charAt(0)=='0'){
+  else if(command.charAt(2)=='0'){
     Serial.println("Runoff set to OFF !");
     runoff = false;
   }
@@ -710,6 +751,12 @@ void processCall(String command){
 
 // function that executes when data is received from master
 void receiveEvent(int howMany) {
+  int debug = 0;
+
+  if(debug){
+    Serial.print("\nEvent Recieved!\nhowMany = ");
+    Serial.println(howMany);
+  }
   //howMany++;
   String data="";
  while (0 <Wire.available()) {
@@ -734,24 +781,24 @@ void setup() {
 
 
   Serial.begin(115200);
-//pinMode(output, OUTPUT);
-//digitalWrite(output, LOW);
-//pinMode(buttonPin, INPUT);
+  //pinMode(output, OUTPUT);
+  //digitalWrite(output, LOW);
+  //pinMode(buttonPin, INPUT);
 
-//blueIris.begin ("Khan - 2G","fatima2005","http://192.168.0.210:8080/json","shahmir","khan",true);
+  //blueIris.begin ("Khan - 2G","fatima2005","http://192.168.0.210:8080/json","shahmir","khan",true);
 
-// Initialize SPIFFS-------------
-#ifdef ESP32
-  if (!LittleFS.begin(true)) {
-    Serial.println("An Error has occurred while mounting LittleFS");
-    return;
-  }
-#else
-  if (!LittleFS.begin()) {
-    Serial.println("An Error has occurred while mounting LittleFS");
-    return;
-  }
-#endif
+  // Initialize SPIFFS-------------
+  #ifdef ESP32
+    if (!LittleFS.begin(true)) {
+      Serial.println("An Error has occurred while mounting LittleFS");
+      return;
+    }
+  #else
+    if (!LittleFS.begin()) {
+      Serial.println("An Error has occurred while mounting LittleFS");
+      return;
+    }
+  #endif
 
   //SPIFFS.format();
 
@@ -790,21 +837,52 @@ void setup() {
   sinceLastNTP = millis() - 60000;
   //strcpy(session,login("http://192.168.0.210:8080/json","shahmir","khan"));
 
-
+  timeClient.begin();  // https://mischianti.org/2020/08/08/network-time-protocol-ntp-timezone-and-daylight-saving-time-dst-with-esp8266-esp32-or-arduino/
+  delay ( 1000 );
+  if (timeClient.update()){
+    Serial.print ( "Adjust local clock" );
+    epochTime = timeClient.getEpochTime();
+    setTime(epochTime);
+  }else{
+     Serial.print ( "NTP Update not WORK!!" );
+  }
 
 
 }
 
 void loop() {
 
+  //String weekDays[7]={"Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"};
+
+  //Month names
+  //String months[12]={"January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"};
+
   if(hasBeen(1000,sinceLastNTP)){
     sinceLastNTP = millis();
+
+
     timeClient.update();
-    formattedTime = timeClient.getFormattedTime();
-    Serial.println(formattedTime);
     
-    hour = timeClient.getHours();
-    minute = timeClient.getMinutes();
+    
+    //epochTime = (  usET.toLocal(now())  )  ;
+    epochTime = timeClient.getEpochTime();
+    unsigned long localTime = usET.toLocal(now());
+
+    curHour = hour(localTime);
+    curMinute = minute(localTime);
+    curSecond = second(localTime);
+    
+    
+    //formattedTime = timeClient.getFormattedTime();
+    formattedTime = getEpochStringByParams(localTime);
+    Serial.println(formattedTime);
+
+    
+    //hour = timeClient.getHours();
+    //minute = timeClient.getMinutes();
+    //dateTimeStructure = gmtime ( (time_t*) &epochTime );
+
+
   }
 
 
@@ -823,7 +901,7 @@ void loop() {
     sinceLastSerialMsg = millis();
     Wire.requestFrom(8, 10);
     receiveEvent(10);
-    Serial.println();
+    //Serial.println();
     /*
     for (int i = 0; i < 16; i++) {
       Serial.print("Relay(Inverted)");
@@ -834,6 +912,7 @@ void loop() {
       Serial.println("name" + String(i + 1) + " IS " + names[i] + "   start" + String(i + 1) + ": " + startTimes[i] + "   Timer" + String(i + 1) + ": " + timer[i] + "    len" + String(i + 1) + ": " + String(timeLengths[i]));
     }
     */
+    //Serial.println(ESP.getFreeHeap(),DEC);
   }
 
 
@@ -849,23 +928,27 @@ void loop() {
       int extractedSec = (extractedHour * 60 * 60) + (extractedMin * 60);
 
       float waterSeconds = timeLengths[i] * 60;
-      totalSec = (timeClient.getHours() * 60 * 60) + (timeClient.getMinutes() * 60) + timeClient.getSeconds();
+      totalSec = (curHour * 60 * 60) + (curMinute * 60) + curSecond;
 
-      Serial.println("totalSec = (" + String(hour) + "*60*60)+(" + String(minute) + "*60)+" + String(timeClient.getSeconds()));
-      Serial.println(totalSec);
-      Serial.println(extractedSec);
-      Serial.println(extractedSec + waterSeconds);
+      //Serial.println("totalSec = (" + String(curHour) + "*60*60)+(" + String(curMinute) + "*60)+" + String(curSecond));
+      //Serial.println(totalSec);
+      //Serial.println(extractedSec);
+      //Serial.println(extractedSec + waterSeconds);
 
       if (totalSec >= extractedSec && totalSec <= (extractedSec + waterSeconds)) {
-        Serial.println("SETTING HIGH");
+        //Serial.println("SETTING HIGH");
         //digitalWrite(output,1);
-        Serial.println("Watering time!");
+        //Serial.println("Watering time!");
         if ((totalSec + 2) > (extractedSec + waterSeconds)) {
           relay[i] = HIGH;
-          String tmp;
-          tmp += "/relay";
-          tmp += (i + 1);
-          tmp += ".txt";
+
+          char tmpCstring[80];
+          sprintf(tmpCstring,"/relay%d.txt",i+1);
+
+          //String tmp;
+          //tmp += "/relay";
+          //tmp += (i + 1);
+          //tmp += ".txt";
           //writeFile(SPIFFS, tmp.c_str(), "1"); no need to wear out the memory with this
 
         } else {

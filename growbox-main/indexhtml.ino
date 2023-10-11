@@ -137,3 +137,13 @@ const char index_html[] PROGMEM = R"rawliteral(
 </body></html>)rawliteral";
 
 */
+
+
+/*
+ * Simple NTP client
+ * https://mischianti.org/
+ *
+ * The MIT License (MIT)
+ * written by Renzo Mischianti <www.mischianti.org>
+ */
+ 

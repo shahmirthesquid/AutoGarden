@@ -45,7 +45,7 @@ void loop() {
     }
   }
 
-  delay(100);
+  delay(100); //might not be needed. Test without and then remove (september 4 2023)
 
 }
 
