@@ -49,6 +49,9 @@ const char index_html[] PROGMEM = R"rawliteral(
       if(element.checked){ xhr.open("GET", "/update?state=0_"+element.name, true); }
       else { xhr.open("GET", "/update?state=1_"+element.name, true); }
       xhr.send();
+      for(let i = 1; i<=16;i++){
+        buttonRefresh(i);
+      }
     }
 
     function showMe (chkbox, div) {
@@ -65,6 +68,10 @@ const char index_html[] PROGMEM = R"rawliteral(
       document.getElementById(div).style.display = vis;
 
       xhr.send();
+
+      for(let i = 1; i<=16;i++){
+        timerRefresh(i);
+      }
     }
 
     function buttonRefresh(i) {
@@ -139,7 +146,7 @@ const char index_html[] PROGMEM = R"rawliteral(
         buttonRefresh(i);
         timerRefresh(i);
       }
-    }, 1000);
+    }, 120000);
 
    // setInterval(function() {
 
@@ -164,6 +171,7 @@ const char index_html[] PROGMEM = R"rawliteral(
 
   -->
 
+  
   <div class="double">
     <form action="/get" target="hidden-form">
       Set Name: <input type="text" name="name1" value="%NAME1%"> <input type="submit" value="Submit" onclick="submitMessage()">
@@ -183,7 +191,7 @@ const char index_html[] PROGMEM = R"rawliteral(
 
     </div>
 
-    <h4>%NAME1% - State <span id="outputState1"></span></h4><label class="switch"><input type="checkbox" name="relay1" onchange="toggleCheckbox(this)" id="output1" %RELAY1% ><span class="slider"></span></label>
+    <h4>%NAME1% - State <span id="outputState1">%RELAYONOFF1%</span></h4><label class="switch"><input type="checkbox" name="relay1" onchange="toggleCheckbox(this)" id="output1" %RELAY1% ><span class="slider"></span></label>
   
   </div>
 
@@ -212,7 +220,7 @@ const char index_html[] PROGMEM = R"rawliteral(
 
     </div>
 
-    <h4>%NAME2% - State <span id="outputState2"></span></h4><label class="switch"><input type="checkbox" name="relay2" onchange="toggleCheckbox(this)" id="output2" %RELAY2% ><span class="slider"></span></label>
+    <h4>%NAME2% - State <span id="outputState2">%RELAYONOFF2%</span></h4><label class="switch"><input type="checkbox" name="relay2" onchange="toggleCheckbox(this)" id="output2" %RELAY2% ><span class="slider"></span></label>
   
   </div>
 
@@ -239,7 +247,7 @@ const char index_html[] PROGMEM = R"rawliteral(
 
     </div>
 
-    <h4>%NAME3% - State <span id="outputState3"></span></h4><label class="switch"><input type="checkbox" name="relay3" onchange="toggleCheckbox(this)" id="output3" %RELAY3% ><span class="slider"></span></label>
+    <h4>%NAME3% - State <span id="outputState3">%RELAYONOFF3%</span></h4><label class="switch"><input type="checkbox" name="relay3" onchange="toggleCheckbox(this)" id="output3" %RELAY3% ><span class="slider"></span></label>
   
   </div>
 
@@ -269,7 +277,7 @@ const char index_html[] PROGMEM = R"rawliteral(
 
     </div>
 
-    <h4>%NAME4% - State <span id="outputState4"></span></h4><label class="switch"><input type="checkbox" name="relay4" onchange="toggleCheckbox(this)" id="output4" %RELAY4% ><span class="slider"></span></label>
+    <h4>%NAME4% - State <span id="outputState4">%RELAYONOFF4%</span></h4><label class="switch"><input type="checkbox" name="relay4" onchange="toggleCheckbox(this)" id="output4" %RELAY4% ><span class="slider"></span></label>
   
   </div>
 
@@ -295,7 +303,7 @@ const char index_html[] PROGMEM = R"rawliteral(
 
     </div>
 
-    <h4>%NAME5% - State <span id="outputState5"></span></h4><label class="switch"><input type="checkbox" name="relay5" onchange="toggleCheckbox(this)" id="output5" %RELAY5% ><span class="slider"></span></label>
+    <h4>%NAME5% - State <span id="outputState5">%RELAYONOFF5%</span></h4><label class="switch"><input type="checkbox" name="relay5" onchange="toggleCheckbox(this)" id="output5" %RELAY5% ><span class="slider"></span></label>
   
   </div>
 
@@ -322,7 +330,7 @@ const char index_html[] PROGMEM = R"rawliteral(
 
     </div>
 
-    <h4>%NAME6% - State <span id="outputState6"></span></h4><label class="switch"><input type="checkbox" name="relay6" onchange="toggleCheckbox(this)" id="output6" %RELAY6% ><span class="slider"></span></label>
+    <h4>%NAME6% - State <span id="outputState6">%RELAYONOFF6%</span></h4><label class="switch"><input type="checkbox" name="relay6" onchange="toggleCheckbox(this)" id="output6" %RELAY6% ><span class="slider"></span></label>
   
   </div>
 
@@ -348,7 +356,7 @@ const char index_html[] PROGMEM = R"rawliteral(
 
     </div>
 
-    <h4>%NAME7% - State <span id="outputState7"></span></h4><label class="switch"><input type="checkbox" name="relay7" onchange="toggleCheckbox(this)" id="output7" %RELAY7% ><span class="slider"></span></label>
+    <h4>%NAME7% - State <span id="outputState7">%RELAYONOFF7%</span></h4><label class="switch"><input type="checkbox" name="relay7" onchange="toggleCheckbox(this)" id="output7" %RELAY7% ><span class="slider"></span></label>
   
   </div>
 
@@ -375,7 +383,7 @@ const char index_html[] PROGMEM = R"rawliteral(
 
     </div>
 
-    <h4>%NAME8% - State <span id="outputState8"></span></h4><label class="switch"><input type="checkbox" name="relay8" onchange="toggleCheckbox(this)" id="output8" %RELAY8% ><span class="slider"></span></label>
+    <h4>%NAME8% - State <span id="outputState8">%RELAYONOFF8%</span></h4><label class="switch"><input type="checkbox" name="relay8" onchange="toggleCheckbox(this)" id="output8" %RELAY8% ><span class="slider"></span></label>
   
   </div>
 
@@ -402,7 +410,7 @@ const char index_html[] PROGMEM = R"rawliteral(
 
     </div>
 
-    <h4>%NAME9% - State <span id="outputState9"></span></h4><label class="switch"><input type="checkbox" name="relay9" onchange="toggleCheckbox(this)" id="output9" %RELAY9% ><span class="slider"></span></label>
+    <h4>%NAME9% - State <span id="outputState9">%RELAYONOFF9%</span></h4><label class="switch"><input type="checkbox" name="relay9" onchange="toggleCheckbox(this)" id="output9" %RELAY9% ><span class="slider"></span></label>
   
   </div>
 
@@ -431,7 +439,7 @@ const char index_html[] PROGMEM = R"rawliteral(
 
     </div>
 
-    <h4>%NAME10% - State <span id="outputState10"></span></h4><label class="switch"><input type="checkbox" name="relay10" onchange="toggleCheckbox(this)" id="output10" %RELAY10% ><span class="slider"></span></label>
+    <h4>%NAME10% - State <span id="outputState10">%RELAYONOFF10%</span></h4><label class="switch"><input type="checkbox" name="relay10" onchange="toggleCheckbox(this)" id="output10" %RELAY10% ><span class="slider"></span></label>
   
   </div>
 
@@ -457,7 +465,7 @@ const char index_html[] PROGMEM = R"rawliteral(
 
     </div>
 
-    <h4>%NAME11% - State <span id="outputState11"></span></h4><label class="switch"><input type="checkbox" name="relay11" onchange="toggleCheckbox(this)" id="output11" %RELAY11% ><span class="slider"></span></label>
+    <h4>%NAME11% - State <span id="outputState11">%RELAYONOFF11%</span></h4><label class="switch"><input type="checkbox" name="relay11" onchange="toggleCheckbox(this)" id="output11" %RELAY11% ><span class="slider"></span></label>
   
   </div>
 
@@ -482,7 +490,7 @@ const char index_html[] PROGMEM = R"rawliteral(
 
     </div>
 
-    <h4>%NAME12% - State <span id="outputState12"></span></h4><label class="switch"><input type="checkbox" name="relay12" onchange="toggleCheckbox(this)" id="output12" %RELAY12% ><span class="slider"></span></label>
+    <h4>%NAME12% - State <span id="outputState12">%RELAYONOFF12%</span></h4><label class="switch"><input type="checkbox" name="relay12" onchange="toggleCheckbox(this)" id="output12" %RELAY12% ><span class="slider"></span></label>
   
   </div>
 
@@ -508,7 +516,7 @@ const char index_html[] PROGMEM = R"rawliteral(
 
     </div>
 
-    <h4>%NAME13% - State <span id="outputState13"></span></h4><label class="switch"><input type="checkbox" name="relay13" onchange="toggleCheckbox(this)" id="output13" %RELAY13% ><span class="slider"></span></label>
+    <h4>%NAME13% - State <span id="outputState13">%RELAYONOFF13%</span></h4><label class="switch"><input type="checkbox" name="relay13" onchange="toggleCheckbox(this)" id="output13" %RELAY13% ><span class="slider"></span></label>
   
   </div>
 
@@ -536,7 +544,7 @@ const char index_html[] PROGMEM = R"rawliteral(
 
     </div>
 
-    <h4>%NAME14% - State <span id="outputState14"></span></h4><label class="switch"><input type="checkbox" name="relay14" onchange="toggleCheckbox(this)" id="output14" %RELAY14% ><span class="slider"></span></label>
+    <h4>%NAME14% - State <span id="outputState14">%RELAYONOFF14%</span></h4><label class="switch"><input type="checkbox" name="relay14" onchange="toggleCheckbox(this)" id="output14" %RELAY14% ><span class="slider"></span></label>
   
   </div>
 
@@ -563,7 +571,7 @@ const char index_html[] PROGMEM = R"rawliteral(
 
     </div>
 
-    <h4>%NAME15% - State <span id="outputState15"></span></h4><label class="switch"><input type="checkbox" name="relay15" onchange="toggleCheckbox(this)" id="output15" %RELAY15% ><span class="slider"></span></label>
+    <h4>%NAME15% - State <span id="outputState15">%RELAYONOFF15%</span></h4><label class="switch"><input type="checkbox" name="relay15" onchange="toggleCheckbox(this)" id="output15" %RELAY15% ><span class="slider"></span></label>
   
   </div>
 
@@ -587,9 +595,10 @@ const char index_html[] PROGMEM = R"rawliteral(
 
     </div>
 
-    <h4>%NAME16% - State <span id="outputState16"></span></h4><label class="switch"><input type="checkbox" name="relay16" onchange="toggleCheckbox(this)" id="output16" %RELAY16% ><span class="slider"></span></label>
+    <h4>%NAME16% - State <span id="outputState16">%RELAYONOFF16%</span></h4><label class="switch"><input type="checkbox" name="relay16" onchange="toggleCheckbox(this)" id="output16" %RELAY16% ><span class="slider"></span></label>
   
   </div>
+    
 
 
 
@@ -625,6 +634,10 @@ unsigned long sinceLastNTP;
 int ledState = LOW;         // the current state of the output pin
 int buttonState;            // the current reading from the input pin
 int lastButtonState = LOW;  // the previous reading from the input pin
+
+int LED1 =2; //assign LED1 to gpio2 pin
+int LED2 = 16; //assign LED2 to gpio16 pin
+
 
 String formattedTime;
 String Date;
@@ -723,6 +736,7 @@ static String getEpochStringByParams(long time, char* pattern = (char *)"%d/%m/%
 
 void processCall(String command){
 
+
   int debug = 1;
   if(debug){Serial.print("PARSING SENSORS:  ");Serial.println(command);}
   
@@ -751,6 +765,7 @@ void processCall(String command){
 
 // function that executes when data is received from master
 void receiveEvent(int howMany) {
+
   int debug = 0;
 
   if(debug){
@@ -779,6 +794,13 @@ bool hasBeen(int seconds,unsigned long sinceLast){
 
 void setup() {
 
+  pinMode(LED1, OUTPUT);
+  pinMode(LED2,OUTPUT);
+
+  digitalWrite(LED1,LOW);
+  digitalWrite(LED2,HIGH);
+
+
 
   Serial.begin(115200);
   //pinMode(output, OUTPUT);
@@ -802,6 +824,7 @@ void setup() {
 
   //SPIFFS.format();
 
+
   // Initialize WIFI-------------
   WiFi.mode(WIFI_STA);
   WiFi.begin(ssid, password);
@@ -813,8 +836,16 @@ void setup() {
   Serial.print("IP Address: ");
   Serial.println(WiFi.localIP());
 
+  digitalWrite(LED1,HIGH);
+  digitalWrite(LED2,LOW);
+
+
   // Initialize Relays-------------
   readSetRelays();
+
+  digitalWrite(LED1,LOW);
+  digitalWrite(LED2,HIGH);
+
   //ledState = readFile(SPIFFS,"/state.txt").toInt();
 
   // Initialize Server-------------
@@ -833,6 +864,9 @@ void setup() {
 
   Wire.onReceive(receiveEvent);
 
+  digitalWrite(LED1,HIGH);
+  digitalWrite(LED2,LOW);
+
   sinceLastSerialMsg = millis();
   sinceLastNTP = millis() - 60000;
   //strcpy(session,login("http://192.168.0.210:8080/json","shahmir","khan"));
@@ -840,7 +874,7 @@ void setup() {
   timeClient.begin();  // https://mischianti.org/2020/08/08/network-time-protocol-ntp-timezone-and-daylight-saving-time-dst-with-esp8266-esp32-or-arduino/
   delay ( 1000 );
   if (timeClient.update()){
-    Serial.print ( "Adjust local clock" );
+    Serial.print ( "Adjust local clock\n" );
     epochTime = timeClient.getEpochTime();
     setTime(epochTime);
   }else{
@@ -848,6 +882,13 @@ void setup() {
   }
 
 
+
+
+
+
+
+  digitalWrite(LED1,LOW);
+  digitalWrite(LED2,HIGH);
 }
 
 void loop() {
@@ -857,7 +898,12 @@ void loop() {
   //Month names
   //String months[12]={"January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"};
 
+  digitalWrite(LED1,HIGH);
+  digitalWrite(LED2,HIGH);
+
   if(hasBeen(1000,sinceLastNTP)){
+    //digitalWrite(LED1,HIGH);
+    digitalWrite(LED2,LOW);
     sinceLastNTP = millis();
 
 
@@ -898,6 +944,8 @@ void loop() {
   //  lastDrainTime = millis();
   //}
   if(hasBeen(1000,sinceLastSerialMsg)){
+    digitalWrite(LED1,LOW);
+    //digitalWrite(LED2,LOW);
     sinceLastSerialMsg = millis();
     Wire.requestFrom(8, 10);
     receiveEvent(10);
