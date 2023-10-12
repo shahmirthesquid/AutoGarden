@@ -392,7 +392,7 @@ String processor(const String& var){
 
       strcat(buttons,"\n\n<div class=\"double\">\n");
       strcat(buttons,"<form action=\"/get\" target=\"hidden-form\">\n");
-      sprintf(tmpLine,"Set Name: <input type=\"text\" name=\"name%d\" value=\"%s\"> <input type=\"submit\" value=\"Submit\" onclick=\"submitMessage()\">\n",curNum,names[i]);
+      sprintf(tmpLine,"Set Name: <input type=\"text\" name=\"name%d\" value=\"%s\"> <input type=\"submit\" value=\"Submit\" onclick=\"submitMessage()\">\n",curNum,names[i].c_str());
       strcat(buttons,tmpLine);
       strcat(buttons,"</form><br>\n");
       sprintf(tmpLine,"<input type=\"checkbox\" id=\"c%d\" onclick=\"showMe(this,'timer%d')\" %s>Is this a timer?\n",curNum,curNum,timerStateValue);
@@ -400,7 +400,7 @@ String processor(const String& var){
       sprintf(tmpLine,"<div id=\"timer%d\" style=\"display: %s;\">\n",curNum,isHidden);
       strcat(buttons,tmpLine);
       strcat(buttons,"<form action=\"/get\" target=\"hidden-form\">\n");
-      sprintf(tmpLine,"When to turn ON (current value %s): <input type=\"time\" name=\"start%d\" value=\"%s\"> <input type=\"submit\" value=\"Submit\" onclick=\"submitMessage()\">\n",startTimes[i],curNum,startTimes[i]);
+      sprintf(tmpLine,"When to turn ON (current value %s): <input type=\"time\" name=\"start%d\" value=\"%s\"> <input type=\"submit\" value=\"Submit\" onclick=\"submitMessage()\">\n",startTimes[i].c_str(),curNum,startTimes[i].c_str());
       strcat(buttons,tmpLine);
       strcat(buttons,"</form><br>\n");
       strcat(buttons,"<form action=\"/get\" target=\"hidden-form\">\n");
@@ -408,7 +408,7 @@ String processor(const String& var){
       strcat(buttons,tmpLine);
       strcat(buttons,"</form>\n");
       strcat(buttons,"</div>\n");
-      sprintf(tmpLine,"<h4>%s - State <span id=\"outputState%d\">%s</span></h4><label class=\"switch\"><input type=\"checkbox\" name=\"relay%d\" onchange=\"toggleCheckbox(this)\" id=\"output%d\" %s><span class=\"slider\"></span></label>",names[i],curNum,stateOnOff,curNum,curNum,relayStateValue);
+      sprintf(tmpLine,"<h4>%s - State <span id=\"outputState%d\">%s</span></h4><label class=\"switch\"><input type=\"checkbox\" name=\"relay%d\" onchange=\"toggleCheckbox(this)\" id=\"output%d\" %s><span class=\"slider\"></span></label>",names[i].c_str(),curNum,stateOnOff,curNum,curNum,relayStateValue);
       strcat(buttons,tmpLine);
       strcat(buttons,"</div>\n\n\n");
 
@@ -648,8 +648,8 @@ void readSetRelays(){
     if(strcmp(nameString,"")==0){
       char tmp[16];
       //strcpy(names[i],tmp);
-      names[i]=tmp;//"GPIO "+String(i+22)+" ";
       sprintf(tmp,"Relay%d / GPIO %d",i+1,i+22);
+      names[i]=tmp;//"GPIO "+String(i+22)+" ";
     }
     else{
       //strcpy(names[i],nameString);
@@ -767,6 +767,7 @@ char* readFileAsChar(char* destination,int bufsize,fs::FS &fs, const char * path
     destination[filePosition]=(char)file.read();
     filePosition++;
   }
+  destination[filePosition] = '\0';
   file.close();
   Serial.println(destination);
   return destination;
